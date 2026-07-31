@@ -1,0 +1,653 @@
+{
+  "name": "Data Federation Layer",
+  "nodes": [
+    {
+      "parameters": {
+        "topic": "context-processing-layer-trigger-topic",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.kafka",
+      "typeVersion": 1,
+      "position": [
+        -784,
+        592
+      ],
+      "id": "112520f0-61a8-4d11-b13f-adf469f9fe36",
+      "name": "Kafka",
+      "credentials": {
+        "kafka": {
+          "id": "cNY3lnfralb8Mqiw",
+          "name": "Kafka account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input:\n{{ $json.toJsonString() }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are TelemetryParser-AI.\nYour task is to extract, infer, and normalize telemetry from the raw input below into a structured JSON object. Treat every field as potentially missing or inconsistent.\n\nRules:\n\n1. Do NOT assume the raw input is valid JSON. Extract values by detecting:\n   - `\"key\": value` pairs\n   - Values may be unquoted strings, numbers, booleans, or quoted strings\n   - Normalize them into proper JSON types\n\n2. Normalize values:\n   - Timestamps → ISO 8601 (e.g., \"2025-12-02T07:52:37Z\")\n   - Numbers → numeric types\n   - Booleans → true/false\n   - Status → UPPERCASE\n   - event_type/action → lowercase\n\n3. Infer missing IDs:\n   - agent_id ← source_agent\n   - target_agent_id ← target_agent\n\n4. Construct job:\n   - `\"event_type:action\"` if both exist\n   - else whichever exists\n   - else null\n\n5. success → true by default. Set success to false only if:\n   - parseError is true\n\n6. Preserve all raw input under \"raw\".\n\n7. If extraction fails entirely → set parseError: true, all other fields null, keep raw.\n\nOutput: Return only JSON, following this schema:\n\n{\n  \"human_id\": null,\n  \"agent_id\": null,\n  \"target_agent_id\": null,\n  \"event_type\": null,\n  \"action\": null,\n  \"job\": null,\n  \"status\": null,\n  \"task_id\": null,\n  \"message\": null,\n  \"timestamp\": null,\n  \"ingestTimestamp\": null,\n  \"latency_ms\": null,\n  \"success\": true,\n  \"error_code\": null,\n  \"data_size_kb\": null,\n  \"span_id\": null,\n  \"parent_span_id\": null,\n  \"parseError\": false,\n  \"raw\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -112,
+        1264
+      ],
+      "id": "e904ffcb-5eaa-4685-80a2-111b2f538633",
+      "name": "Normalisation Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"human_id\": null,\n  \"agent_id\": null,\n  \"target_agent_id\": null,\n  \"event_type\": null,\n  \"action\": null,\n  \"job\": null,\n  \"status\": null,\n  \"task_id\": null,\n  \"message\": null,\n  \"timestamp\": null,\n  \"ingestTimestamp\": null,\n  \"latency_ms\": null,\n  \"success\": true,\n  \"error_code\": null,\n  \"data_size_kb\": null,\n  \"span_id\": null,\n  \"parent_span_id\": null,\n  \"parseError\": false,\n  \"raw\": \"\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        1488
+      ],
+      "id": "cd016e21-1284-4f60-b141-03849dcaf5ab",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "topic": "telemetry-local-db-raw",
+        "groupId": "n8n‑telemetry‑processor",
+        "options": {
+          "fromBeginning": true,
+          "jsonParseMessage": true,
+          "parallelProcessing": true,
+          "onlyMessage": false
+        }
+      },
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -784,
+        368
+      ],
+      "id": "c932e7d0-a4ce-43ca-bad4-5e78ae2c4525",
+      "name": "Kafka Trigger",
+      "credentials": {
+        "kafka": {
+          "id": "cNY3lnfralb8Mqiw",
+          "name": "Kafka account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "telemetry_raw",
+        "fields": "={{ Object.keys($json).join(',') }}",
+        "options": {}
+      },
+      "name": "Insert to Telemetry DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        1376
+      ],
+      "id": "d15177ea-75c5-474f-991e-52781a99d32c",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the nested event object\nconst item = $input.item.json.output;\n\n// Use current timestamp\nconst now = Date.now();\n\n// Fallback if item is null or empty\nif (!item || Object.keys(item).length === 0) {\n    return {\n        timestamp: now,\n        totalCount: 1,\n        ingestCount: 1,\n        transformSuccess: 0,\n        errorCount: 1,\n        latencyMs: 3000, // default 3 seconds\n        trace_id: null,\n        job: null,\n        actor: null,\n        target: null,\n        region: null,\n        host: null,\n        message: null\n    };\n}\n\n// Parse top-level ingestTimestamp as number; fallback to now if missing\nconst ingestTimestamp = item.ingestTimestamp\n    ? (typeof item.ingestTimestamp === 'number' \n        ? item.ingestTimestamp \n        : new Date(item.ingestTimestamp).getTime())\n    : now;\n\n// Determine parseError\nconst parseError = item.parseError === true;\n\n// Determine success\nconst success = parseError ? false : (item.success ?? true);\n\n// Calculate latency: use item.latency_ms if available\nconst latencyMs = item.latency_ms ?? 0;\n\n// Return single object (not array)\nreturn {\n    timestamp: item.timestamp ?? now,\n    ingestTimestamp,\n    totalCount: 1,\n    ingestCount: 1,\n    transformSuccess: success ? 1 : 0,\n    errorCount: success ? 0 : 1,\n    latencyMs,\n    trace_id: null,\n    job: item.job ?? null,\n    actor: item.agent_id ?? null,\n    target: item.target_agent_id ?? null,\n    region: null,\n    host: null,\n    message: item.message ?? null,\n    status: item.status ?? null,\n    error_code: item.error_code ?? null,\n    data_size_kb: item.data_size_kb ?? null\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        1568
+      ],
+      "id": "980dec2f-c4d8-4930-abd7-10d8b7872028",
+      "name": "(1) Capture Metrics"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data =\n  Array.isArray($json.output)\n    ? $json.output.find(o => o?.timestamp || o?.latency_ms) ?? {}\n    : $json.output ?? {}\n\nreturn {\n  id: data.id ?? null,\n  _id: data._id ?? null,\n  human_id: data.human_id ?? null,\n  timestamp: data.timestamp ?? null,\n  message: data.message ?? null,\n  error_code: data.error_code ?? null,\n  task_id: data.task_id ?? null,\n  job: data.job ?? null,\n  action: data.action ?? data.operation ?? null,\n  event_type: data.event_type ?? null,\n  status: data.status ?? null,\n  success: data.success ?? null,\n  source_agent: data.source_agent ?? null,\n  target_agent: data.target_agent ?? null,\n  agent_id: data.agent_id ?? null,\n  target_agent_id: data.target_agent_id ?? null,\n  span_id: data.span_id ?? null,\n  parent_span_id: data.parent_span_id ?? null,\n  latency_ms: data.latency_ms ?? null,\n  operation: data.operation ?? null,\n  data_size_kb: data.data_size_kb ?? null,\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        1376
+      ],
+      "id": "40578b5a-06d2-48e8-ab29-6993112b029c",
+      "name": "Pre-formatting for MongoDB"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Access the current input item\nconst item = $input.item;\n\n// Extract the output object\nconst data = item.json || {};\n\n// Convert ISO timestamp → nanoseconds\nconst ts_ns = String((new Date(data.timestamp || Date.now())).getTime() * 1e6);\n\n// Build the Loki push payload\nreturn {\n  streams: [\n    {\n      stream: {\n        job: data.job || \"unknown\",\n        actor: data.actor || \"unknown\",\n        target: data.target || \"unknown\",\n        region: data.region || \"unknown\",\n        host: data.host || \"unknown\",\n\n        // Metric labels\n        ingestCount: String(data.ingestCount ?? \"0\"),\n        transformSuccess: String(data.transformSuccess ?? \"0\"),\n        totalCount: String(data.totalCount ?? \"0\"),\n        errorCount: String(data.errorCount ?? \"0\"),\n        latencyMs: String(data.latencyMs ?? \"0\")   // <-- Added here\n      },\n      values: [\n        [ts_ns, data.message || \"No message\"]\n      ]\n    }\n  ]\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        1568
+      ],
+      "id": "c1026d77-5f0b-451e-8779-4ac80930e825",
+      "name": "Formatting for Grafana"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json  }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        1568
+      ],
+      "id": "6f6c3d38-8d87-4d53-98c1-c16ab1bddb30",
+      "name": "Push Grafana Metrics",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "XxPMszNrbPNCdKEB",
+          "name": "Bearer Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "BXE8sqrEF7PkKNmf",
+          "name": "BasicAuth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "local_raw",
+        "options": {
+          "limit": 10
+        },
+        "query": "{\n  \"timestamp\": {\n    \"$gte\": \"2026-01-1900:00:00.000Z\"\n  }\n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        784,
+        1856
+      ],
+      "id": "716fbca1-282f-404e-8bb8-ecd90e83a4ec",
+      "name": "Find documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "7fXMn7Hil5ZoBmRu",
+          "name": "local_db MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        576,
+        1856
+      ],
+      "id": "1e004ea0-8f22-4825-96a4-24a11c6e3099",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1004,
+        1520
+      ],
+      "id": "c2b42d79-4637-47c7-b5dc-5a0410f090ca",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "topic": "context-processing-layer-trigger-topic",
+        "sendInputData": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Publish to Kafka Topic",
+      "type": "n8n-nodes-base.kafka",
+      "typeVersion": 1,
+      "position": [
+        780,
+        1376
+      ],
+      "id": "0c7624cc-d824-421b-adfb-329ef3afea93",
+      "credentials": {
+        "kafka": {
+          "id": "1AquCTC0qH8Wavv7",
+          "name": "Local Kafka Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://kafka-rest:8082/topics/context-processing-layer-trigger-topic/partitions/0/messages?offset=0&count=10",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.kafka.json.v2+json"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/vnd.kafka.json.v2+json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -784,
+        816
+      ],
+      "id": "5c8b1ffe-4010-4834-b809-4c95768eb543",
+      "name": "Push Grafana Metrics1"
+    },
+    {
+      "parameters": {
+        "topic": "telemetry-local-db-raw",
+        "groupId": "n8n‑telemetry‑processor",
+        "options": {
+          "fromBeginning": true
+        }
+      },
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -336,
+        1976
+      ],
+      "id": "dc7157ff-a9c0-4994-851f-ce816ca4a440",
+      "name": "Local Kafka Trigger",
+      "alwaysOutputData": false,
+      "credentials": {
+        "kafka": {
+          "id": "1AquCTC0qH8Wavv7",
+          "name": "Local Kafka Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        1696
+      ],
+      "id": "5c8a8626-ff5b-4094-8a09-1b51a5e9a2e6",
+      "name": "Google Gemini Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tWExho4xsBMHInj1",
+          "name": "Google Gemini(PaLM) Api Normalisation Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8082/consumers/n8n-telemetry-raw/instances/n8n-telemetry-raw-consumer/records",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.kafka.json.v2+json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -560,
+        1424
+      ],
+      "id": "7054b548-e12c-4674-831b-fd854284210b",
+      "name": "get"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -784,
+        1040
+      ],
+      "id": "81795d45-2381-42dd-ba8e-e9ba2f5b3154",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:8082/consumers/n8n-telemetry-forever/instances/n8n-telemetry-forever/records",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.kafka.json.v2+json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -560,
+        1040
+      ],
+      "id": "7bcdaa9d-d4ba-479c-ab2c-9bbd9b2aea64",
+      "name": "keep kafka alive"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "67812ffe-2fdb-40fc-871e-e1d62912bfc0",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "[]",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -336,
+        1424
+      ],
+      "id": "a3e75c35-1ffa-4633-aebd-839ff7cc2403",
+      "name": "Filter"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Normalisation Agent": {
+      "main": [
+        [
+          {
+            "node": "(1) Capture Metrics",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Pre-formatting for MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kafka Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "(1) Capture Metrics": {
+      "main": [
+        [
+          {
+            "node": "Formatting for Grafana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Telemetry DB": {
+      "main": [
+        [
+          {
+            "node": "Publish to Kafka Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-formatting for MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Insert to Telemetry DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting for Grafana": {
+      "main": [
+        [
+          {
+            "node": "Push Grafana Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Find documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Kafka": {
+      "main": [
+        []
+      ]
+    },
+    "Push Grafana Metrics": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to Kafka Topic": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local Kafka Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "keep kafka alive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7509f862-8cae-4247-beb6-d9557f244324",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f32d5822a2849cb195e1ab5306933bfaefd5e72c87d29738a06685603d71a039"
+  },
+  "id": "fcHxJ9isxL00rjBC",
+  "tags": []
+}

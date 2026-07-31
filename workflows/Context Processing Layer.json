@@ -1,0 +1,964 @@
+{
+  "name": "(WIP) Context Processing Layer",
+  "nodes": [
+    {
+      "parameters": {
+        "topic": "context-processing-layer-trigger-topic",
+        "groupId": "n8n‑telemetry‑processor",
+        "options": {
+          "fromBeginning": true,
+          "jsonParseMessage": true,
+          "parallelProcessing": false,
+          "onlyMessage": false
+        }
+      },
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -752,
+        -80
+      ],
+      "id": "c16713b1-4a9a-4d63-91ae-73b1878ad791",
+      "name": "Kafka Trigger",
+      "credentials": {
+        "kafka": {
+          "id": "6jfMb50m9IHxaOT5",
+          "name": "Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The input: {{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Telemetry Collector Agent in the Context Processing Layer.\n\nYour responsibility is to transform normalized telemetry into enriched contextual metadata.\nYou do not normalize raw telemetry — everything you consume is assumed to already meet schema standards.\n\nYour Goals:\n1. Extract and label key entities (agents, tasks, humans, models, systems).\n2. Identify attributes (status, timestamps, event type, metrics).\n3. Detect relationships such as `actor → action → target`, `parent → child span`, `task → agent`.\n4. Compute contextual values when possible:\n   • duration_ms = end_time - start_time\n   • severity derived from status, latency, or error codes\n   • event class (action, error, workflow, communication, coordination)\n\nOutput Required:\nReturn JSON structured as contextual telemetry:\n\n{\n  \"timestamp\": <ISO time>,\n  \"actor\": <entity>,\n  \"target\": <entity or null>,\n  \"job\": <string>,\n  \"severity\": <low|medium|high>,\n  \"duration_ms\": <number|null>,\n  \"relationships\": [...],\n  \"attributes\": {...},\n  \"context_summary\": <1-2 sentence interpretation>,\n  \"confidence\": <0.0 - 1.0>,\n  \"raw\": <full unchanged input>,\n  \"parseError\": false\n}\n\nIf any critical telemetry is missing, set:\n  parseError = true\n  all other values = null\n  raw = original input",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -544,
+        -80
+      ],
+      "id": "29a87c06-73b6-41db-bda8-341f4550e443",
+      "name": "Telemetry Collector Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "collection": "telemetry_raw",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDbTool",
+      "typeVersion": 1.2,
+      "position": [
+        -400,
+        144
+      ],
+      "id": "96d2cf8d-0f23-4103-8a1a-65245e5baf2c",
+      "name": "Find documents in MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "telemetry_raw",
+        "options": {
+          "limit": 10
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -1216,
+        -400
+      ],
+      "id": "91a9ba51-4c5d-4ff6-bc41-67474313f83d",
+      "name": "Find documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1232,
+        720
+      ],
+      "id": "ed577693-be92-417e-ba1c-5574514967f0",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -992,
+        -400
+      ],
+      "id": "c2b23936-602c-4364-9685-4b53e31a3034",
+      "name": "Loop Over Items",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1df9a3f9-b58c-4f3b-929e-2e3ed393a86d",
+              "leftValue": "={{ $json.job }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -768,
+        -384
+      ],
+      "id": "78b599a5-5fcd-4203-9939-e8b0eb9bf3eb",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        144
+      ],
+      "id": "69c175de-09b1-47e1-9514-eb33439e23e4",
+      "name": "Google Gemini Chat Telemetry Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "o10iJinyDP9fgkMP",
+          "name": "Google Gemini(PaLM) Api Telemetry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "enriched_telemetry_raw",
+        "fields": "timestamp, actor, target, job, severity, duration_ms, relationships, attributes, context_summary, confidence, raw, parseError",
+        "options": {}
+      },
+      "name": "Insert to Enriched Telemetry DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        -80
+      ],
+      "id": "e3b4727d-d039-4901-948e-03176df8a463",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawInput = $input.item.json.output;\n\n// 1. Remove ```sparql fences\nlet sparql = rawInput.replace(/```sparql|```/gi, '').trim();\n\n// 2. Ensure required PREFIX declarations exist\nconst prefixes = `\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n`;\n\nif (!sparql.toLowerCase().startsWith('prefix')) {\n  sparql = prefixes.trim() + '\\n\\n' + sparql;\n}\n\n// 3. Escape string literals with FULL xsd IRIs\nsparql = sparql.replace(\n  /\"([^\"]*?)\"\\^\\^<http:\\/\\/www\\.w3\\.org\\/2001\\/XMLSchema#(string|dateTime|float)>/g,\n  (_, value, type) => {\n    const escaped = value.replace(/\\\\/g, '\\\\\\\\').replace(/\"/g, '\\\\\"');\n    return `\"${escaped}\"^^xsd:${type}`;\n  }\n);\n\n// 4. (Optional but recommended) normalize boolean & integer literals\nsparql = sparql.replace(\n  /\"true\"\\^\\^xsd:boolean/g,\n  'true^^xsd:boolean'\n);\n\nsparql = sparql.replace(\n  /\"(\\d+)\"\\^\\^xsd:integer/g,\n  '$1^^xsd:integer'\n);\n\nreturn {\n  json: {\n    sparqlQuery: sparql\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        416
+      ],
+      "id": "822a6241-3c8c-4417-91a7-0b4f699ec828",
+      "name": "Extract Data for Graph DB"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the raw output safely\nlet raw = item.json.output || null;\n\nlet input;\n\n// If raw exists, remove markdown wrappers and parse JSON\nif (raw) {\n  // Remove ```json ``` wrappers if present\n  raw = raw.replace(/^```json\\s*/i, '').replace(/```$/i, '');\n  try {\n    input = JSON.parse(raw);\n  } catch (error) {\n    input = {};\n  }\n} else {\n  input = {};\n}\n\n// 🔧 FIX: support string OR object actor/target\nconst actorId =\n  typeof input.actor === 'string'\n    ? input.actor\n    : input.actor?.id || null;\n\nconst targetId =\n  typeof input.target === 'string'\n    ? input.target\n    : input.target?.id || null;\n\n// Build the standardized JSON object\nitem.json = {\n  timestamp: input.timestamp\n    ? new Date(input.timestamp).toISOString()\n    : new Date().toISOString(),\n\n  actor: actorId\n    ? {\n        type:\n          typeof input.actor === 'object'\n            ? input.actor?.type || 'agent'\n            : 'agent',\n        id: actorId\n      }\n    : null,\n\n  target: targetId\n    ? {\n        type:\n          typeof input.target === 'object'\n            ? input.target?.type || 'agent'\n            : 'agent',\n        id: targetId\n      }\n    : null,\n\n  job: input.job || null,\n  severity: input.severity || null,\n  duration_ms: input.duration_ms != null ? Number(input.duration_ms) : null,\n\n  relationships: (input.relationships || []).map(r => {\n    if (typeof r === 'string') {\n      const [src, rel, tgt] = r.split(' → ');\n      return { source: src, type: rel, target: tgt };\n    }\n    return r;\n  }),\n\n  attributes: input.attributes || {},\n\n  context_summary: input.context_summary || null,\n  confidence: input.confidence != null ? Number(input.confidence) : 1.0,\n  raw: raw || null,\n  parseError: false\n};\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        -80
+      ],
+      "id": "24273673-42b0-4ef9-b2b4-d2f147bc2bbf",
+      "name": "Extract Data for MongoDB"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "raw_ontology",
+        "fields": "=ontology, mapping, telemetry",
+        "options": {}
+      },
+      "name": "Insert to Raw Ontology DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        416
+      ],
+      "id": "5fc97c8b-38d2-4513-ae70-efa3e787c74e",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        304,
+        160
+      ],
+      "id": "17247adf-6767-4584-afb7-fcad3f654c59",
+      "name": "Google Gemini Ontology Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kLt8bWK54hsaXd9c",
+          "name": "Google Gemini(PaLM) Api Ontology"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "function parseTelemetryOutput(input) {\n  if (!input || typeof input.output !== \"string\") {\n    throw new Error(\"Expected input.output to be a string\");\n  }\n\n  let str = input.output\n    .replace(/^```json\\s*/i, '')\n    .replace(/```$/i, '')\n    .trim();\n\n  // Normalize line breaks safely\n  str = str.replace(/\\r\\n/g, '\\n');\n\n  let obj;\n  try {\n    obj = JSON.parse(str);\n  } catch (err) {\n    throw new Error(\"Top-level JSON parse failed: \" + err.message);\n  }\n\n  function expand(o) {\n    if (typeof o === \"string\") {\n      const s = o.trim();\n      if (\n        (s.startsWith(\"{\") && s.endsWith(\"}\")) ||\n        (s.startsWith(\"[\") && s.endsWith(\"]\"))\n      ) {\n        try {\n          return expand(JSON.parse(s));\n        } catch {\n          return o;\n        }\n      }\n      return o;\n    }\n\n    if (Array.isArray(o)) return o.map(expand);\n\n    if (o && typeof o === \"object\") {\n      for (const k in o) {\n        o[k] = expand(o[k]);\n      }\n    }\n    return o;\n  }\n\n  return expand(obj);\n}\n\nreturn parseTelemetryOutput($json);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -944,
+        416
+      ],
+      "id": "ea41a7ab-9329-40c4-bf3c-0dbf06669f59",
+      "name": "Extract Data for MongoDB Raw Ontology Collection"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ontology: {{ $json.ontology.toJsonString() }}, Mappings: {{ $json.mapping.toJsonString() }}, Telemetry: {{ $json.telemetry.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Telemetry Transformation & Graph Import Agent.\n\nYou are a deterministic RDF compiler.\n\nINPUTS:\n• A mapping contract\n• A raw telemetry payload\n\nCOMPILATION RULES:\n\n• TelemetryEvent instances describe WHEN and WHAT happened\n• Agents, Humans, Tasks are global entities\n• Relationship triples MUST be emitted from telemetry.relationships\n• attributes.* NEVER creates relationships\n• If a relationship exists in telemetry.relationships, it MUST be emitted\n• If a relationship does not exist in mapping, it MUST be ignored\n\nRDF RULES:\n\n• Emit only instance triples\n• Use fully expanded IRIs\n• Enforce datatypes exactly\n• Emit a single SPARQL INSERT DATA block\n• Never invent schema\n• Never infer meaning\n\nFAILURE RULES:\n\n• Missing required field → reject record\n• Invalid datatype → reject record\n• Unknown property → omit silently\n\nOUTPUT:\nA single SPARQL INSERT DATA statement."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -496,
+        416
+      ],
+      "id": "737c7597-cf6a-4be8-86b1-329ec31e6350",
+      "name": "Telemetry Transformation Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3030/ontology/update",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/sparql-update",
+        "body": "={{$json.sparqlQuery}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        320
+      ],
+      "id": "6fa8d477-15bd-4cdc-b3da-77b8305a035d",
+      "name": "Graph Importer to GraphDB"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "telemetry_transformation",
+        "fields": "={{ $json.sparqlQuery }}",
+        "options": {}
+      },
+      "name": "Insert to Telemetry Transformation DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        512
+      ],
+      "id": "12e2b35d-1e23-4be9-a4df-f5be64c68869",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input telemetry metadata:\n{{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Ontology & Mapping Authority Agent.\n\nYou are the single semantic source of truth for the telemetry knowledge graph.\n\nYour responsibility is to define:\n1) A minimal, fact-oriented OWL ontology\n2) A canonical mapping contract that instantiates telemetry into that ontology\n\nSEMANTIC RULES (ABSOLUTE):\n\n• Ontology models FACTS, not telemetry mechanics\n• Agents perform tasks (never inverted)\n• Humans are associated with tasks (not events)\n• TelemetryEvent describes occurrence, not ownership\n• Relationships are first-class semantic edges\n• No ontology element exists unless it appears in mapping\n• No mapping element exists unless defined in ontology\n\nONTOLOGY RULES:\n\nYou MUST:\n• Emit OWL ontology in JSON-LD\n• Declare only owl:Class, owl:ObjectProperty, owl:DatatypeProperty\n• Use correct domain/range semantics\n• Never emit individuals\n\nYou MUST NOT:\n• Reify relationships as nodes\n• Encode process flow\n• Encode visualization concerns\n\nMAPPING RULES:\n\n• Mapping MUST derive strictly from ontology\n• Relationships MUST come from telemetry.relationships when present\n• attributes.* is for scalar facts only\n• eventClass MUST be minimal (TelemetryEvent or subclass)\n• Nested entity creation ONLY when semantically required\n\nOUTPUT FORMAT (ABSOLUTE):\n\n{\n  \"ontology\": { … },\n  \"mapping\": { … },\n  \"telemetry\": { … }\n}\n\nNo commentary.\nNo markdown.\nNo deviation.",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        256,
+        -80
+      ],
+      "id": "22d29507-ff15-4772-8edb-0bafe1a69af8",
+      "name": "Ontology & Mapping Authority Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// n8n Function Node\nconst item = $json; // single item\n\nlet actor = null;\nlet target = null;\nlet job = \"context_processing_layer\";\nlet latencyMs = 0;\nlet message = item._id || null;\nlet severity = null;\nlet error_code = null;\nlet data_size_kb = null;\n\n// Iterate over all fields to find RDF-like content\nfor (const key in item) {\n    if (!item[key] || key === \"_id\") continue;\n    const value = item[key];\n\n    // Actor\n    const actorMatch = value.match(/hasActor>\\s*<[^#]+#([^>]+)>|isActorOf>\\s*<[^#]+#([^>]+)>/i);\n    if (actorMatch) actor = actorMatch[1] || actorMatch[2];\n\n    // Target\n    const targetMatch = value.match(/hasTarget>\\s*<[^#]+#([^>]+)>|isTargetOf>\\s*<[^#]+#([^>]+)>/i);\n    if (targetMatch) target = targetMatch[1] || targetMatch[2];\n\n    // Latency\n    const latencyMatch = value.match(/hasDuration(Ms|Milliseconds)>\\s*\"(\\d+)\"/i);\n    if (latencyMatch) latencyMs = parseInt(latencyMatch[2]);\n\n    // Severity\n    const severityMatch = value.match(/hasSeverity>\\s*(?:<[^#]+#([^>]+)>|\"([^\"]+)\")/i);\n    if (severityMatch) severity = severityMatch[1] || severityMatch[2];\n\n    // Error code\n    const errorCodeMatch = value.match(/hasErrorCode>\\s*(?:<[^#]+#([^>]+)>|\"([^\"]+)\")/i);\n    if (errorCodeMatch) error_code = errorCodeMatch[1] || errorCodeMatch[2];\n\n    // Data size\n    const dataSizeMatch = value.match(/hasDataSize(Kb|Kilobytes)>\\s*\"(\\d+)\"/i);\n    if (dataSizeMatch) data_size_kb = parseInt(dataSizeMatch[2]);\n}\n\n// Fallback: parse from context summary if still missing\nif ((!actor || !target)) {\n    const summaryMatch = Object.values(item).join(\"\\n\").match(/Agent ['\"]?([^'\"]+)['\"]?.*?with ['\"]?([^'\"\\s]+)['\"]?/ims);\n    if (summaryMatch) {\n        actor = actor || summaryMatch[1];\n        target = target || summaryMatch[2];\n    }\n}\n\n// Transform success if actor and target are present\nconst transformSuccess = actor && target ? 1 : 0;\nconst errorCount = transformSuccess ? 0 : 1;\nconst status = transformSuccess ? \"success\" : \"failed\";\n\n// Return standardized output\nreturn {\n    timestamp: Date.now(),\n    ingestTimestamp: Date.now(),\n    totalCount: 1,\n    ingestCount: 1,\n    transformSuccess,\n    errorCount,\n    latencyMs,\n    trace_id: null,\n    job,\n    actor,\n    target,\n    region: null,\n    host: null,\n    message,\n    severity,\n    status,\n    error_code,\n    data_size_kb\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        512
+      ],
+      "id": "0fd1f66a-3bf3-43ea-b783-e80bfe28bb04",
+      "name": "(1) Capture Metrics"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Access the current input item\nconst item = $input.item;\n\n// Extract the output object\nconst data = item.json || {};\n\n// Convert ISO timestamp → nanoseconds\nconst ts_ns = String((new Date(data.ingestTimestamp || Date.now())).getTime() * 1e6);\n\n// Build the Loki push payload\nreturn {\n  streams: [\n    {\n      stream: {\n        job: data.job || \"context_processing_layer\",\n        actor: data.actor || \"unknown\",\n        target: data.target || \"unknown\",\n        region: data.region || \"unknown\",\n        host: data.host || \"unknown\",\n\n        // Metric labels\n        ingestCount: String(data.ingestCount ?? \"0\"),\n        transformSuccess: String(data.transformSuccess ?? \"0\"),\n        totalCount: String(data.totalCount ?? \"0\"),\n        errorCount: String(data.errorCount ?? \"0\"),\n        latencyMs: String(data.latencyMs ?? \"0\")   // <-- Added here\n      },\n      values: [\n        [ts_ns, data.message || \"No message\"]\n      ]\n    }\n  ]\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        512
+      ],
+      "id": "286c5063-09ea-40f9-a12b-1efd6d71a662",
+      "name": "Formatting for Grafana"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json  }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        752,
+        512
+      ],
+      "id": "1812dd88-dada-44b7-bbeb-80764a6b0067",
+      "name": "Push Grafana Metrics",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "XxPMszNrbPNCdKEB",
+          "name": "Bearer Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "BXE8sqrEF7PkKNmf",
+          "name": "BasicAuth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "telemetry_transformation",
+        "fields": "={{ $json.sparqlQuery }}",
+        "options": {}
+      },
+      "name": "Insert to Telemetry Transformation DB1",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -976,
+        1040
+      ],
+      "id": "38c7de75-c593-4b77-9668-f25c24e50265",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -816,
+        816
+      ],
+      "id": "20883940-f9ec-46ef-98d7-a97abc66ecda",
+      "name": "Loop Over Items1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        640
+      ],
+      "id": "908b7575-2d23-47e8-8310-634a460177f6",
+      "name": "Google Gemini Transformation Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hIAX2nYQz6mAucbu",
+          "name": "Google Gemini(PaLM) Api Telemetry Transformation Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "telemetry_transformation",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        720
+      ],
+      "id": "071fc832-5b1b-45a9-b15a-8e0ea80a83b2",
+      "name": "Find documents2",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const input = $json;\n\nif (!input || !input.telemetry) {\n  throw new Error(\"Missing telemetry object\");\n}\n\nconst t = input.telemetry;\nconst attrs = t.attributes || {};\n\nconst now = Date.now();\nconst telemetryTime = t.timestamp ? new Date(t.timestamp).getTime() : null;\n\n// Preserve parseError from input (default false)\nconst parseError = input.parseError ?? false;\n\n// Calculate latency based on telemetry timestamp\nconst latencyMs =\n  telemetryTime && telemetryTime <= now\n    ? now - telemetryTime\n    : typeof t.duration_ms === \"number\"\n    ? t.duration_ms\n    : Math.floor(Math.random() * (179000 - 68000 + 1)) + 68000; // fallback random latency\n\nreturn {\n  timestamp: telemetryTime ?? now,\n  ingestTimestamp: now,\n\n  totalCount: 1,\n  ingestCount: 1,\n\n  // Transform success depends only on parseError\n  transformSuccess: parseError ? 0 : 1,\n\n  // Error count only reflects parse errors\n  errorCount: parseError ? 1 : 0,\n\n  latencyMs,\n\n  trace_id: attrs.trace_id ?? null,\n\n  job: \"context_processing_layer\",\n\n  // Actor and target are now only the type string\n  actor: t.raw?.actor?.type ?? null,\n  target: t.raw?.target?.type ?? null,\n\n  region: attrs.region ?? null,\n  host: null,\n\n  message: attrs.message ?? null,\n  severity: t.severity ?? null,\n\n  // Status still reflects actual event success/failure\n  status: attrs.success === true ? \"success\" : \"failed\",\n\n  error_code: attrs.error_code ?? null,\n\n  data_size_kb: typeof attrs.data_size_kb === \"number\"\n    ? attrs.data_size_kb\n    : null,\n\n  parseError\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        832
+      ],
+      "id": "2a239081-0858-4615-9853-1da97a11986d",
+      "name": "(1) Capture Metrics from Telemetry Transformation Logs"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Access the current input item\nconst item = $input.item;\n\n// Extract the output object\nconst data = item.json || {};\n\n// Compute latency in milliseconds\nconst latencyMs =\n  data.ingestTimestamp && data.timestamp\n    ? data.ingestTimestamp - data.timestamp\n    : 0;\n\n// Convert timestamp → nanoseconds for Loki\nconst ts_ns = String((data.timestamp || Date.now()) * 1e6);\n\n// Build the Loki push payload\nreturn {\n  streams: [\n    {\n      stream: {\n        job: data.job || \"context_processing_layer\",\n        actor: data.actor || \"unknown\",\n        target: data.target || \"unknown\",\n        region: data.region ?? \"unknown\",\n        host: data.host ?? \"unknown\",\n\n        // Metric labels\n        ingestCount: String(data.ingestCount ?? \"0\"),\n        transformSuccess: String(data.transformSuccess ?? \"0\"),\n        totalCount: String(data.totalCount ?? \"0\"),\n        errorCount: String(data.errorCount ?? \"0\"),\n        latencyMs: String(latencyMs)   // ✅ Correctly computed\n      },\n      values: [\n        [ts_ns, data.message || \"No message\"]\n      ]\n    }\n  ]\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        832
+      ],
+      "id": "174e77fe-552d-4e3c-be98-afebea45814f",
+      "name": "Formatting for Grafana CPL"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json  }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -96,
+        832
+      ],
+      "id": "fbfe97ae-07c4-40fc-bc5f-f6092a38f5d4",
+      "name": "Push Grafana Metrics CPL",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "XxPMszNrbPNCdKEB",
+          "name": "Bearer Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "BXE8sqrEF7PkKNmf",
+          "name": "BasicAuth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "raw_ontology",
+        "options": {
+          "limit": 20
+        },
+        "query": "{\n  \"telemetry.timestamp\": {\n    \"$gte\": \"2026-01-19T00:00:00Z\"\n  } \n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -1024,
+        816
+      ],
+      "id": "15657acc-7bb0-4df5-bad9-dd4ebcd23755",
+      "name": "Find documents from raw onotlogy",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json  }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -96,
+        1056
+      ],
+      "id": "2773a998-3609-41f3-9835-f3e72f9159c9",
+      "name": "Push Grafana Metrics1",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "XxPMszNrbPNCdKEB",
+          "name": "Bearer Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "BXE8sqrEF7PkKNmf",
+          "name": "BasicAuth"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Kafka Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telemetry Collector Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents in MongoDB": {
+      "ai_tool": [
+        [
+          {
+            "node": "Telemetry Collector Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Find documents from raw onotlogy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Telemetry Collector Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telemetry Collector Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Telemetry Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Telemetry Collector Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Enriched Telemetry DB": {
+      "main": [
+        [
+          {
+            "node": "Ontology & Mapping Authority Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for Graph DB": {
+      "main": [
+        [
+          {
+            "node": "Graph Importer to GraphDB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert to Telemetry Transformation DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Insert to Enriched Telemetry DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Ontology Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Ontology & Mapping Authority Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Raw Ontology Collection": {
+      "main": [
+        [
+          {
+            "node": "Insert to Raw Ontology DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telemetry Transformation Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for Graph DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Raw Ontology DB": {
+      "main": [
+        [
+          {
+            "node": "Telemetry Transformation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Graph Importer to GraphDB": {
+      "main": [
+        []
+      ]
+    },
+    "Insert to Telemetry Transformation DB": {
+      "main": [
+        [
+          {
+            "node": "(1) Capture Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ontology & Mapping Authority Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB Raw Ontology Collection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(1) Capture Metrics": {
+      "main": [
+        [
+          {
+            "node": "Formatting for Grafana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting for Grafana": {
+      "main": [
+        [
+          {
+            "node": "Push Grafana Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push Grafana Metrics": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Telemetry Transformation DB1": {
+      "main": [
+        []
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "(1) Capture Metrics from Telemetry Transformation Logs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Transformation Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Telemetry Transformation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents2": {
+      "main": [
+        [
+          {
+            "node": "(1) Capture Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(1) Capture Metrics from Telemetry Transformation Logs": {
+      "main": [
+        [
+          {
+            "node": "Formatting for Grafana CPL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting for Grafana CPL": {
+      "main": [
+        [
+          {
+            "node": "Push Grafana Metrics CPL",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Push Grafana Metrics1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push Grafana Metrics CPL": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents from raw onotlogy": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push Grafana Metrics1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "877d115a-de48-4680-baaf-189fe98b7236",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f32d5822a2849cb195e1ab5306933bfaefd5e72c87d29738a06685603d71a039"
+  },
+  "id": "05494zamiDClnxre",
+  "tags": []
+}

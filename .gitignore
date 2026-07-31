@@ -1,0 +1,59 @@
+# macOS
+.DS_Store
+._*
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment / secrets
+.env
+.env.*
+*.env
+.grafana_env
+credentials*.json
+secrets/
+*token*.txt
+*cred*.txt
+
+# n8n runtime
+.n8n/
+database.sqlite
+database.sqlite-*
+n8n_data/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# Local caches / installs
+node_modules/
+__pycache__/
+*.pyc
+.python-version
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+
+# Local scratch
+/tmp/
+scratch/
+_scratch/
+*.log
+
+# Docker volumes
+volumes/
+fuseki-data/
+
+# Session state / large temp evidence dumps (keep only screenshots + reports)
+test_artefacts/evidence/
+test_artefacts/snapshots/
+test_artefacts/recordings/
+test_artefacts/grafana_screenshots/
+
+# Local-only working materials (video scripts, unpublished drafts, private notes)
+media/
+notes/
+_local/

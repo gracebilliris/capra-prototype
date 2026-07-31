@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CAPRA — Context-Aware Privacy Risk Assessment</title>
+  <meta name="description" content="CAPRA is a context-aware privacy risk assessment framework and reference prototype. UTS PhD research by Grace Billiris." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <p class="eyebrow">UTS · PhD Research · 2026</p>
+      <h1>CAPRA</h1>
+      <p class="tag">Context-Aware Privacy Risk Assessment</p>
+      <p class="lede">A five-layer reference framework and working prototype that keeps privacy risk assessment continuously sensitive to the context in which data is used.</p>
+      <p class="cta">
+        <a class="btn primary" href="https://github.com/gracebilliris/capra-prototype">GitHub repo</a>
+        <a class="btn" href="#videos">Videos</a>
+        <a class="btn" href="#architecture">Architecture</a>
+      </p>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section id="problem">
+      <h2>The problem</h2>
+      <p>Modern socio-technical systems — hospitals, retailers, universities — collect telemetry whose privacy implications shift with <strong>context</strong>. The same data field can be low-risk in one setting and high-risk in another, but today's tools (DPIAs, static risk registers) treat risk as a fixed label. When context changes, the risk posture is already out of date.</p>
+    </section>
+
+    <section id="approach">
+      <h2>The approach</h2>
+      <p>CAPRA is developed under Peffers' Design Science Research Methodology across three evaluation domains: <strong>healthcare</strong>, <strong>retail</strong>, and <strong>student admission</strong>. Each domain runs the same architecture over domain-specific telemetry, and outputs are compared to expert-labelled ground truth and to a baseline static register.</p>
+    </section>
+
+    <section id="architecture">
+      <h2>The five-layer architecture</h2>
+      <div class="layers">
+        <div class="layer" data-idx="5">
+          <span class="badge">HIL</span>
+          <h3>Human-in-the-Loop</h3>
+          <p>Reviewer decisions and rationale are captured and written back into the ontology as labelled examples.</p>
+        </div>
+        <div class="layer" data-idx="4">
+          <span class="badge">E&amp;RL</span>
+          <h3>Escalation &amp; Response</h3>
+          <p>Declarative policies: LOW/MED logged, HIGH alerted, CRITICAL escalated with full context bundle.</p>
+        </div>
+        <div class="layer" data-idx="3">
+          <span class="badge">RIL</span>
+          <h3>Risk Intelligence</h3>
+          <p>Deterministic severity mapping (0/1/2/3+ contextual hits → LOW/MED/HIGH/CRIT). Writes to Loki and MongoDB Atlas.</p>
+        </div>
+        <div class="layer" data-idx="2">
+          <span class="badge">CPL</span>
+          <h3>Context Processing</h3>
+          <p>OWL ontology in Fuseki + SPARQL derives contextual attributes. Optional LLM disambiguates free-text purpose.</p>
+        </div>
+        <div class="layer" data-idx="1">
+          <span class="badge">DFL</span>
+          <h3>Data Federation</h3>
+          <p>Ingests Kafka, HTTP, CDC. Normalises into a common envelope: actor · action · resource · purpose · timestamp.</p>
+        </div>
+      </div>
+      <p class="flow-note">↑ Telemetry flows upward · ↓ Human feedback flows downward</p>
+    </section>
+
+    <section id="videos">
+      <h2>Videos</h2>
+      <p>Three short videos describe the research, the framework, and a live scenario in the prototype.</p>
+      <ol class="videos">
+        <li><strong>Research Project Outline</strong> (2–3 min) — problem, RQ, DSRM approach, contribution. <em>Link TBA.</em></li>
+        <li><strong>Framework Description</strong> (3–4 min) — the five layers, one at a time. <em>Link TBA.</em></li>
+        <li><strong>Prototype Walkthrough</strong> (5–7 min) — a healthcare telemetry batch fired through the workflow and visualised on the Grafana Risk Dashboard. <em>Link TBA.</em></li>
+      </ol>
+      <p class="hint">Scripts and shot lists live in <a href="https://github.com/gracebilliris/capra-prototype/tree/main/media"><code>media/</code></a>.</p>
+    </section>
+
+    <section id="prototype">
+      <h2>The prototype</h2>
+      <ul class="specs">
+        <li><strong>Workflow engine:</strong> n8n</li>
+        <li><strong>Ontology store:</strong> Apache Jena Fuseki (OWL + SPARQL)</li>
+        <li><strong>Durable store:</strong> MongoDB Atlas</li>
+        <li><strong>Streaming:</strong> Apache Kafka</li>
+        <li><strong>Observability:</strong> Grafana Cloud + Loki</li>
+        <li><strong>Optional LLM:</strong> Azure OpenAI</li>
+      </ul>
+      <p>Set-up instructions for external reviewers are in <a href="https://github.com/gracebilliris/capra-prototype/blob/main/docs/SETUP.md"><code>docs/SETUP.md</code></a>. A reference <code>docker-compose.yml</code> is provided.</p>
+    </section>
+
+    <section id="evaluation">
+      <h2>Evaluation status</h2>
+      <p>Beta iteration complete. 396 telemetry records processed across three domains. Full evaluation matrix, per-layer reports, and DSRM alignment are in <a href="https://github.com/gracebilliris/capra-prototype/tree/main/test_artefacts"><code>test_artefacts/</code></a>.</p>
+    </section>
+
+    <section id="author">
+      <h2>Author</h2>
+      <p><strong>Grace Billiris</strong> — PhD candidate, School of Computer Science, University of Technology Sydney.</p>
+      <p>Correspondence: via GitHub Issues on the <a href="https://github.com/gracebilliris/capra-prototype">capra-prototype</a> repository.</p>
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <p>© 2026 Grace Billiris · MIT License · Built for UTS PhD research</p>
+    </div>
+  </footer>
+</body>
+</html>

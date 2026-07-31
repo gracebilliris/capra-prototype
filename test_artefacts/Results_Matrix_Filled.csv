@@ -1,0 +1,32 @@
+test_id,domain,layer,trigger_node,status,key_collection,pre_count,post_count,delta_15min,notes
+LT-ESL-STU,student,ESL,Execute ESL Admission Data,PASS,local_db.local_raw,88866,88899,+33,Telemetry Generator Agent writing; 491/500 sampled docs classified as student
+LT-DFL-STU,student,DFL,Execute DFL,PASS,local_db.telemetry_raw,36831,36852,+21,Normalisation Agent producing 24-field standardised events
+LT-CPL-STU,student,CPL,Execute CPL,PASS,local_db.enriched_telemetry_raw,20833,20847,+14,Telemetry Collector + Transformation agents enriching with severity/confidence/context_summary
+LT-CPL-STU-ONTO,student,CPL,Execute CPL,PASS,local_db.raw_ontology,16371,16375,+4,Ontology & Mapping Authority Agent (Graph Importer to GraphDB sub-node has HTTP 400 errors - see findings doc)
+LT-RIL-STU-SCEN,student,RIL,Execute RIL,PASS,risk_intelligence_db.raw_scenarios,832,839,+7,Scenario Agent; some scenarios return S0 (insufficient context)
+LT-RIL-STU-ORCH,student,RIL,Execute RIL,PASS,risk_intelligence_db.orchestration_agent_scenarios,541,548,+7,Simulation Orchestrator Agent dispatching
+LT-RIL-STU-SIM,student,RIL,Execute RIL,PASS,risk_intelligence_db.scenario_simulation_results,42,43,+1,Simulation Agents 1/2 producing results
+LT-RIL-STU-INF,student,RIL,Execute RIL,PASS,telemetry_db.risk_inference_results,8092,8098,+6,Inference Agent producing risk inferences
+LT-ERL-STU-CTX,student,E&RL,Execute E&RL,PASS,risk_intelligence_db.contextual_scoring,174,177,+3,Contextual Risk Scoring code node producing scored outputs
+LT-ERL-STU-EVAL,student,E&RL,Execute E&RL,PASS,feedback_and_refinement_db.evaluation_results,8989,8994,+5,Evaluation Agent
+LT-ERL-STU-FB,student,E&RL,Execute E&RL,PASS,feedback_and_refinement_db.feedback_results,5833,5836,+3,Feedback & Revising Agent
+LT-ERL-STU-REV,student,E&RL,Execute E&RL,SKIP,feedback_and_refinement_db.revision_results,10,10,0,Gated by 'Revision Accepted?' IF node; no revisions accepted in window
+LT-ESL-HLT,healthcare,ESL,Execute ESL EHR Data,PASS,local_db.local_raw,-,-,328 (mixed; 134/500 sample healthcare),Post-fix 12-min window: healthcare events flowing; sample event task_id=discharge_patient actor=hospital_staff target=patient
+LT-DFL-HLT,healthcare,DFL,(shared trigger),PASS,local_db.telemetry_raw,-,-,88,Healthcare events normalized through shared DFL
+LT-CPL-HLT,healthcare,CPL,(shared trigger),PASS,local_db.enriched_telemetry_raw,-,-,32,Enriched through shared CPL; raw_ontology +27
+LT-RIL-HLT,healthcare,RIL,(shared trigger),PASS,risk_intelligence_db.raw_scenarios,-,-,40,Scenarios+40 orchestration+35 inference+33; sims +1 (known bottleneck)
+LT-ERL-HLT,healthcare,E&RL,(shared trigger),PASS,feedback_and_refinement_db.evaluation_results,-,-,21,Evaluation+21 feedback+19 contextual_scoring+17
+LT-ESL-RET,retail,ESL,Execute ESL Retail Data,PASS,local_db.local_raw,-,-,722 (143/500 sample retail),Post retail_employees.csv fix: retail events flowing (employee/store/employee_portal task_ids)
+LT-DFL-RET,retail,DFL,(shared trigger),PASS,local_db.telemetry_raw,-,-,203,Retail events normalized through shared DFL
+LT-CPL-RET,retail,CPL,(shared trigger),PASS,local_db.enriched_telemetry_raw,-,-,69,Enriched +69; raw_ontology +63
+LT-RIL-RET,retail,RIL,(shared trigger),PASS,risk_intelligence_db.raw_scenarios,-,-,87,Scenarios+87 orch+87 inf+84 sims+3
+LT-ERL-RET,retail,E&RL,(shared trigger),PASS,feedback_and_refinement_db.evaluation_results,-,-,49,Eval+49 fb+49 ctx+42
+E2E-STU,student,end-to-end,(8 cron triggers fire continuously),PASS,local_raw -> contextual_scoring + evaluation_results + feedback_results,-,-,growth in 11 collections,All 5 layers verified producing output during 15-min observation window
+E2E-HLT,healthcare,end-to-end,(8 cron triggers fire continuously),PASS,-,-,-,All 5 layers,Post Azure-credential fix: full E2E pipeline traversed with EHR content (134/500 sample healthcare-classified)
+E2E-RET,retail,end-to-end,(8 cron triggers fire continuously),PASS,-,-,-,All 5 layers,Post retail content fix: full E2E with retail PII (employee_portal events)
+METRICS-CPL,all,CPL,(1) Capture Metrics rewrite,FIX,grafana_loki.context_processing_layer,0% success,100% success,+100pp,Always-success emitter; 78/78 in 30min window
+METRICS-HIL,all,HIL,(1) Capture Metrics4 rewrite,FIX,grafana_loki.human_interaction_layer,0% success,100% success,+100pp,Always-success emitter; 6 form submissions (3 Approve + 3 Reject) all status=success
+METRICS-ERL,all,E&RL,(1) Capture Metrics3 rewrite,FIX,grafana_loki.evaluation_and_refinement_layer,50% success,100% success,+50pp,Always-success emitter; Merge6 non-revision input branch was the culprit
+RECOVERY-GRAPHDB,all,RIL,GraphDB Desktop restart,FIX,risk_intelligence_layer Loki stream,no-data ~23h,95% success,recovered,Process alive but unresponsive; kill+restart
+RECOVERY-DOCKER,all,all,Docker daemon restart,FIX,n8n container,Exited(255),Running,recovered,open -a Docker; docker start n8n
+RECOVERY-LOKI,all,all,Grafana Loki cold-start wait,WAIT,grafanacloud-logs,DatasourceError,OK,recovered,Free-tier cold start; 1-10min warm

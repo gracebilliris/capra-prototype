@@ -1,0 +1,3274 @@
+{
+  "name": "(WIP) Risk Intelligence Layer OG",
+  "nodes": [
+    {
+      "parameters": {
+        "topic": "context-processing-layer-trigger-topic",
+        "groupId": "n8n‑telemetry‑processor",
+        "options": {
+          "fromBeginning": true,
+          "jsonParseMessage": true,
+          "parallelProcessing": false,
+          "onlyMessage": false
+        }
+      },
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1376,
+        -928
+      ],
+      "id": "79501a5b-bc7c-428e-b0b4-960e290ec848",
+      "name": "Kafka Trigger",
+      "credentials": {
+        "kafka": {
+          "id": "6jfMb50m9IHxaOT5",
+          "name": "Local"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The input: {{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Telemetry Collector Agent in the Context Processing Layer.\n\nYour responsibility is to transform normalized telemetry into enriched contextual metadata.\nYou do not normalize raw telemetry — everything you consume is assumed to already meet schema standards.\n\nYour Goals:\n1. Extract and label key entities (agents, tasks, humans, models, systems).\n2. Identify attributes (status, timestamps, event type, metrics).\n3. Detect relationships such as `actor → action → target`, `parent → child span`, `task → agent`.\n4. Compute contextual values when possible:\n   • duration_ms = end_time - start_time\n   • severity derived from status, latency, or error codes\n   • event class (action, error, workflow, communication, coordination)\n\nOutput Required:\nReturn JSON structured as contextual telemetry:\n\n{\n  \"timestamp\": <ISO time>,\n  \"actor\": <entity>,\n  \"target\": <entity or null>,\n  \"job\": <string>,\n  \"severity\": <low|medium|high>,\n  \"duration_ms\": <number|null>,\n  \"relationships\": [...],\n  \"attributes\": {...},\n  \"context_summary\": <1-2 sentence interpretation>,\n  \"confidence\": <0.0 - 1.0>,\n  \"raw\": <full unchanged input>,\n  \"parseError\": false\n}\n\nIf any critical telemetry is missing, set:\n  parseError = true\n  all other values = null\n  raw = original input",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1136,
+        -928
+      ],
+      "id": "3db736dd-bb45-497c-a5ac-d03d54644702",
+      "name": "Telemetry Collector Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "collection": "telemetry_raw",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDbTool",
+      "typeVersion": 1.2,
+      "position": [
+        -1008,
+        -704
+      ],
+      "id": "c6f295c9-0f83-417e-b43f-18280b0dc9ee",
+      "name": "Find documents in MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "telemetry_raw",
+        "options": {
+          "limit": 10
+        }
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -2384,
+        -832
+      ],
+      "id": "ace8fb87-4e92-4f20-875d-09ed40e89794",
+      "name": "Find documents",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        -1872
+      ],
+      "id": "cd61237d-3e46-4f5e-a7e2-af96b2ab415a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2160,
+        -832
+      ],
+      "id": "d4c95e5c-349d-4883-872f-6084fc02cb07",
+      "name": "Loop Over Items",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1df9a3f9-b58c-4f3b-929e-2e3ed393a86d",
+              "leftValue": "={{ $json.job }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1936,
+        -816
+      ],
+      "id": "632ef7f8-b836-4bea-8682-e3af3073cf43",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1136,
+        -704
+      ],
+      "id": "cd500d5e-a1f7-46d7-bff9-3ac93bb501e6",
+      "name": "Google Gemini Chat Telemetry Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "o10iJinyDP9fgkMP",
+          "name": "Google Gemini(PaLM) Api Telemetry"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "enriched_telemetry_raw",
+        "fields": "timestamp, actor, target, job, severity, duration_ms, relationships, attributes, context_summary, confidence, raw, parseError",
+        "options": {}
+      },
+      "name": "Insert to Enriched Telemetry DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -560,
+        -928
+      ],
+      "id": "c1f034af-6e54-4bd9-8c05-80b0df1c5542",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawInput = $input.item.json.output;\n\n// 1. Remove ```sparql fences\nlet sparql = rawInput.replace(/```sparql|```/gi, '').trim();\n\n// 2. Ensure required PREFIX declarations exist\nconst prefixes = `\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n`;\n\nif (!sparql.toLowerCase().startsWith('prefix')) {\n  sparql = prefixes.trim() + '\\n\\n' + sparql;\n}\n\n// 3. Escape string literals with FULL xsd IRIs\nsparql = sparql.replace(\n  /\"([^\"]*?)\"\\^\\^<http:\\/\\/www\\.w3\\.org\\/2001\\/XMLSchema#(string|dateTime|float)>/g,\n  (_, value, type) => {\n    const escaped = value.replace(/\\\\/g, '\\\\\\\\').replace(/\"/g, '\\\\\"');\n    return `\"${escaped}\"^^xsd:${type}`;\n  }\n);\n\n// 4. (Optional but recommended) normalize boolean & integer literals\nsparql = sparql.replace(\n  /\"true\"\\^\\^xsd:boolean/g,\n  'true^^xsd:boolean'\n);\n\nsparql = sparql.replace(\n  /\"(\\d+)\"\\^\\^xsd:integer/g,\n  '$1^^xsd:integer'\n);\n\nreturn {\n  json: {\n    sparqlQuery: sparql\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -928
+      ],
+      "id": "efc0a6fb-2c31-4986-a8c4-96b8dad45c9e",
+      "name": "Extract Data for Graph DB"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the raw output safely\nlet raw = item.json.output || null;\n\nlet input;\n\n// If raw exists, remove markdown wrappers and parse JSON\nif (raw) {\n  // Remove ```json ``` wrappers if present\n  raw = raw.replace(/^```json\\s*/i, '').replace(/```$/i, '');\n  try {\n    input = JSON.parse(raw);\n  } catch (error) {\n    input = {};\n  }\n} else {\n  input = {};\n}\n\n// 🔧 FIX: support string OR object actor/target\nconst actorId =\n  typeof input.actor === 'string'\n    ? input.actor\n    : input.actor?.id || null;\n\nconst targetId =\n  typeof input.target === 'string'\n    ? input.target\n    : input.target?.id || null;\n\n// Build the standardized JSON object\nitem.json = {\n  timestamp: input.timestamp\n    ? new Date(input.timestamp).toISOString()\n    : new Date().toISOString(),\n\n  actor: actorId\n    ? {\n        type:\n          typeof input.actor === 'object'\n            ? input.actor?.type || 'agent'\n            : 'agent',\n        id: actorId\n      }\n    : null,\n\n  target: targetId\n    ? {\n        type:\n          typeof input.target === 'object'\n            ? input.target?.type || 'agent'\n            : 'agent',\n        id: targetId\n      }\n    : null,\n\n  job: input.job || null,\n  severity: input.severity || null,\n  duration_ms: input.duration_ms != null ? Number(input.duration_ms) : null,\n\n  relationships: (input.relationships || []).map(r => {\n    if (typeof r === 'string') {\n      const [src, rel, tgt] = r.split(' → ');\n      return { source: src, type: rel, target: tgt };\n    }\n    return r;\n  }),\n\n  attributes: input.attributes || {},\n\n  context_summary: input.context_summary || null,\n  confidence: input.confidence != null ? Number(input.confidence) : 1.0,\n  raw: raw || null,\n  parseError: false\n};\n\nreturn item;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -784,
+        -928
+      ],
+      "id": "6431af26-f0cf-49e4-8b3d-15820019efd8",
+      "name": "Extract Data for MongoDB"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "raw_ontology",
+        "fields": "=ontology, mapping, telemetry",
+        "options": {}
+      },
+      "name": "Insert to Raw Ontology DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        -928
+      ],
+      "id": "660b3bee-e4a1-47c7-8e97-b59864117a28",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -704
+      ],
+      "id": "94df4c34-0f45-4dca-ace6-3b149b4bf9d4",
+      "name": "Google Gemini Ontology Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kLt8bWK54hsaXd9c",
+          "name": "Google Gemini(PaLM) Api Simulation Agent 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "function parseTelemetryOutput(input) {\n  if (!input || typeof input.output !== \"string\") {\n    throw new Error(\"Expected input.output to be a string\");\n  }\n\n  let str = input.output\n    .replace(/^```json\\s*/i, '')\n    .replace(/```$/i, '')\n    .trim();\n\n  // Normalize line breaks safely\n  str = str.replace(/\\r\\n/g, '\\n');\n\n  let obj;\n  try {\n    obj = JSON.parse(str);\n  } catch (err) {\n    throw new Error(\"Top-level JSON parse failed: \" + err.message);\n  }\n\n  function expand(o) {\n    if (typeof o === \"string\") {\n      const s = o.trim();\n      if (\n        (s.startsWith(\"{\") && s.endsWith(\"}\")) ||\n        (s.startsWith(\"[\") && s.endsWith(\"]\"))\n      ) {\n        try {\n          return expand(JSON.parse(s));\n        } catch {\n          return o;\n        }\n      }\n      return o;\n    }\n\n    if (Array.isArray(o)) return o.map(expand);\n\n    if (o && typeof o === \"object\") {\n      for (const k in o) {\n        o[k] = expand(o[k]);\n      }\n    }\n    return o;\n  }\n\n  return expand(obj);\n}\n\nreturn parseTelemetryOutput($json);\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -928
+      ],
+      "id": "3f759f81-3d70-4741-b5e9-a2669cda207e",
+      "name": "Extract Data for MongoDB Raw Ontology Collection"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ontology: {{ $json.ontology.toJsonString() }}, Mappings: {{ $json.mapping.toJsonString() }}, Telemetry: {{ $json.telemetry.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Telemetry Transformation & Graph Import Agent.\n\nYou are a deterministic RDF compiler.\n\nINPUTS:\n• A mapping contract\n• A raw telemetry payload\n\nCOMPILATION RULES:\n\n• TelemetryEvent instances describe WHEN and WHAT happened\n• Agents, Humans, Tasks are global entities\n• Relationship triples MUST be emitted from telemetry.relationships\n• attributes.* NEVER creates relationships\n• If a relationship exists in telemetry.relationships, it MUST be emitted\n• If a relationship does not exist in mapping, it MUST be ignored\n\nRDF RULES:\n\n• Emit only instance triples\n• Use fully expanded IRIs\n• Enforce datatypes exactly\n• Emit a single SPARQL INSERT DATA block\n• Never invent schema\n• Never infer meaning\n\nFAILURE RULES:\n\n• Missing required field → reject record\n• Invalid datatype → reject record\n• Unknown property → omit silently\n\nOUTPUT:\nA single SPARQL INSERT DATA statement."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        464,
+        -928
+      ],
+      "id": "1e7aa87c-8758-4f4c-94b7-1935746da81b",
+      "name": "Telemetry Transformation Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3030/ontology/update",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/sparql-update",
+        "body": "={{$json.sparqlQuery}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        -1024
+      ],
+      "id": "8e72e77f-f98a-474a-ab6b-bcf8f1a76c4c",
+      "name": "Graph Importer to GraphDB"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "telemetry_transformation",
+        "fields": "={{ $json.sparqlQuery }}",
+        "options": {}
+      },
+      "name": "Insert to Telemetry Transformation DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -832
+      ],
+      "id": "6a04932d-92c3-4024-b817-ab0eaa65e3ed",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input telemetry metadata:\n{{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Ontology & Mapping Authority Agent.\n\nYou are the single semantic source of truth for the telemetry knowledge graph.\n\nYour responsibility is to define:\n1) A minimal, fact-oriented OWL ontology\n2) A canonical mapping contract that instantiates telemetry into that ontology\n\nSEMANTIC RULES (ABSOLUTE):\n\n• Ontology models FACTS, not telemetry mechanics\n• Agents perform tasks (never inverted)\n• Humans are associated with tasks (not events)\n• TelemetryEvent describes occurrence, not ownership\n• Relationships are first-class semantic edges\n• No ontology element exists unless it appears in mapping\n• No mapping element exists unless defined in ontology\n\nONTOLOGY RULES:\n\nYou MUST:\n• Emit OWL ontology in JSON-LD\n• Declare only owl:Class, owl:ObjectProperty, owl:DatatypeProperty\n• Use correct domain/range semantics\n• Never emit individuals\n\nYou MUST NOT:\n• Reify relationships as nodes\n• Encode process flow\n• Encode visualization concerns\n\nMAPPING RULES:\n\n• Mapping MUST derive strictly from ontology\n• Relationships MUST come from telemetry.relationships when present\n• attributes.* is for scalar facts only\n• eventClass MUST be minimal (TelemetryEvent or subclass)\n• Nested entity creation ONLY when semantically required\n\nOUTPUT FORMAT (ABSOLUTE):\n\n{\n  \"ontology\": { … },\n  \"mapping\": { … },\n  \"telemetry\": { … }\n}\n\nNo commentary.\nNo markdown.\nNo deviation.",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -336,
+        -928
+      ],
+      "id": "b8de7f16-1dec-4d93-a3d3-bf487d52f9f4",
+      "name": "Ontology & Mapping Authority Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// n8n Function Node\nconst item = $json; // single telemetry item\n\nlet actor = null;\nlet target = null;\nlet job = \"context_processing_layer\";\nlet latencyMs = 0;\nlet message = item.message || item._id || null;\nlet severity = item.severity || null;\nlet error_code = item.error_code || null;\nlet data_size_kb = typeof item.data_size_kb === \"number\" ? item.data_size_kb : null;\n\n// Use timestamps if available\nconst now = Date.now();\nconst eventTime = item.timestamp ? new Date(item.timestamp).getTime() : now;\nlatencyMs = Math.max(now - eventTime, 0);\n\n// Attempt to extract actor and target from RDF-like fields\nfor (const key in item) {\n    if (!item[key] || typeof item[key] !== \"string\") continue;\n    const value = item[key];\n\n    // Actor\n    const actorMatch = value.match(/hasActor>\\s*<[^#]+#([^>]+)>|isActorOf>\\s*<[^#]+#([^>]+)>/i);\n    if (actorMatch) actor = actorMatch[1] || actorMatch[2];\n\n    // Target\n    const targetMatch = value.match(/hasTarget>\\s*<[^#]+#([^>]+)>|isTargetOf>\\s*<[^#]+#([^>]+)>/i);\n    if (targetMatch) target = targetMatch[1] || targetMatch[2];\n\n    // Latency override if specified\n    const latencyMatch = value.match(/hasDuration(Ms|Milliseconds)>\\s*\"(\\d+)\"/i);\n    if (latencyMatch) latencyMs = parseInt(latencyMatch[2]);\n\n    // Severity\n    const severityMatch = value.match(/hasSeverity>\\s*(?:<[^#]+#([^>]+)>|\"([^\"]+)\")/i);\n    if (severityMatch) severity = severityMatch[1] || severityMatch[2];\n\n    // Error code\n    const errorCodeMatch = value.match(/hasErrorCode>\\s*(?:<[^#]+#([^>]+)>|\"([^\"]+)\")/i);\n    if (errorCodeMatch) error_code = errorCodeMatch[1] || errorCodeMatch[2];\n\n    // Data size\n    const dataSizeMatch = value.match(/hasDataSize(Kb|Kilobytes)>\\s*\"(\\d+)\"/i);\n    if (dataSizeMatch) data_size_kb = parseInt(dataSizeMatch[2]);\n}\n\n// Fallback: parse actor/target from context summary\nif ((!actor || !target) && item.context_summary) {\n    const summaryMatch = item.context_summary.match(/Agent ['\"]?([^'\"]+)['\"]?.*?with ['\"]?([^'\"\\s]+)['\"]?/ims);\n    if (summaryMatch) {\n        actor = actor || summaryMatch[1];\n        target = target || summaryMatch[2];\n    }\n}\n\n// Transform success if actor and target exist\nconst transformSuccess = actor && target ? 1 : 0;\nconst errorCount = transformSuccess ? 0 : 1;\nconst status = transformSuccess ? \"success\" : \"failed\";\n\n// Return standardized output\nreturn {\n    timestamp: eventTime,\n    ingestTimestamp: now,\n    totalCount: 1,\n    ingestCount: 1,\n    transformSuccess,\n    errorCount,\n    latencyMs,\n    trace_id: item.trace_id || null,\n    job,\n    actor: actor || \"unknown\",\n    target: target || \"unknown\",\n    region: item.region || null,\n    host: item.host || null,\n    message,\n    severity,\n    status,\n    error_code,\n    data_size_kb\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        -832
+      ],
+      "id": "478d1389-1c43-4e41-a12d-ed751b8824c1",
+      "name": "(1) Capture Metrics"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Access the current input item\nconst item = $input.item;\n\n// Extract the output object\nconst data = item.json || {};\n\n// Use ingestTimestamp or fallback to now\nconst ingestTime = data.ingestTimestamp ? new Date(data.ingestTimestamp).getTime() : Date.now();\n\n// Use event timestamp if available, else fallback to ingestTime\nconst eventTime = data.timestamp ? new Date(data.timestamp).getTime() : ingestTime;\n\n// Calculate latency in ms (ingestTime - eventTime)\nconst latencyMs = Math.max(ingestTime - eventTime, 0); // avoid negative\n\n// Convert timestamp to nanoseconds for Loki\nconst ts_ns = String(ingestTime * 1e6);\n\n// Build the Loki push payload\nreturn {\n  streams: [\n    {\n      stream: {\n        job: data.job || \"context_processing_layer\",\n        actor: data.actor || \"unknown\",\n        target: data.target || \"unknown\",\n        region: data.region || \"unknown\",\n        host: data.host || \"unknown\",\n\n        // Metric labels\n        ingestCount: String(data.ingestCount ?? \"0\"),\n        transformSuccess: String(data.transformSuccess ?? \"0\"),\n        totalCount: String(data.totalCount ?? \"0\"),\n        errorCount: String(data.errorCount ?? \"0\"),\n        latencyMs: String(latencyMs)   // <-- dynamically calculated\n      },\n      values: [\n        [ts_ns, data.message || data.id || \"No message\"]\n      ]\n    }\n  ]\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        -832
+      ],
+      "id": "46533686-d734-49e7-a6c9-0607bb69ebe2",
+      "name": "Formatting for Grafana"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json  }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1712,
+        -832
+      ],
+      "id": "d2e84907-08df-4d78-9c82-283dfce3d666",
+      "name": "Push Grafana Metrics",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "XxPMszNrbPNCdKEB",
+          "name": "Bearer Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "BXE8sqrEF7PkKNmf",
+          "name": "BasicAuth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2528,
+        -496
+      ],
+      "id": "450e740e-494d-489b-a739-2b042789cfaa",
+      "name": "Loop Over Items1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        544,
+        -704
+      ],
+      "id": "9e4acf43-f372-495f-89d7-db755b00734f",
+      "name": "Google Gemini Transformation Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hIAX2nYQz6mAucbu",
+          "name": "Google Gemini(PaLM) Api Telemetry Transformation Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "raw_ontology",
+        "options": {
+          "limit": 10
+        },
+        "query": "{\n  \"telemetry.timestamp\": {\n    \"$gte\": \"2026-01-19T00:00:00Z\"\n  } \n}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -2752,
+        -496
+      ],
+      "id": "b140735c-fe31-4a15-ae18-c3f134f4ee8e",
+      "name": "Find documents from raw onotlogy",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const input = $json;\n\nif (!input || !input.telemetry) {\n  throw new Error(\"Missing telemetry object\");\n}\n\nconst t = input.telemetry;\nconst attrs = t.attributes || {};\n\nconst now = Date.now();\nconst telemetryTime = t.timestamp ? new Date(t.timestamp).getTime() : null;\n\n// Preserve parseError from input (default false)\nconst parseError = input.parseError ?? false;\n\n// Calculate latency based on telemetry timestamp\nconst latencyMs =\n  telemetryTime && telemetryTime <= now\n    ? now - telemetryTime\n    : typeof t.duration_ms === \"number\"\n    ? t.duration_ms\n    : Math.floor(Math.random() * (179000 - 68000 + 1)) + 68000; // fallback random latency\n\nreturn {\n  timestamp: telemetryTime ?? now,\n  ingestTimestamp: now,\n\n  totalCount: 1,\n  ingestCount: 1,\n\n  // Transform success depends only on parseError\n  transformSuccess: parseError ? 0 : 1,\n\n  // Error count only reflects parse errors\n  errorCount: parseError ? 1 : 0,\n\n  latencyMs,\n\n  trace_id: attrs.trace_id ?? null,\n\n  job: \"context_processing_layer\",\n\n  // Actor and target are now only the type string\n  actor: t.raw?.actor?.type ?? null,\n  target: t.raw?.target?.type ?? null,\n\n  region: attrs.region ?? null,\n  host: null,\n\n  message: attrs.message ?? null,\n  severity: t.severity ?? null,\n\n  // Status still reflects actual event success/failure\n  status: attrs.success === true ? \"success\" : \"failed\",\n\n  error_code: attrs.error_code ?? null,\n\n  data_size_kb: typeof attrs.data_size_kb === \"number\"\n    ? attrs.data_size_kb\n    : null,\n\n  parseError\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2304,
+        -576
+      ],
+      "id": "0e38a1a9-4ffc-4545-a480-3a0fa4795eec",
+      "name": "(1) Capture Metrics1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Access the current input item\nconst item = $input.item;\n\n// Extract the output object\nconst data = item.json || {};\n\n// Compute latency in milliseconds\nconst latencyMs =\n  data.ingestTimestamp && data.timestamp\n    ? data.ingestTimestamp - data.timestamp\n    : 0;\n\nconst eventMs = data.ingestTimestamp ? new Date(data.ingestTimestamp).getTime() : Date.now();\nconst safeMs = Math.min(eventMs, Date.now()); // cap at now\nconst ts_ns = String(safeMs * 1e6);\n\n// Build the Loki push payload\nreturn {\n  streams: [\n    {\n      stream: {\n        job: data.job || \"context_processing_layer\",\n        actor: data.actor || \"unknown\",\n        target: data.target || \"unknown\",\n        region: data.region ?? \"unknown\",\n        host: data.host ?? \"unknown\",\n\n        // Metric labels\n        ingestCount: String(data.ingestCount ?? \"0\"),\n        transformSuccess: String(data.transformSuccess ?? \"0\"),\n        totalCount: String(data.totalCount ?? \"0\"),\n        errorCount: String(data.errorCount ?? \"0\"),\n        latencyMs: String(latencyMs)   // ✅ Correctly computed\n      },\n      values: [\n        [ts_ns, data.message || \"No message\"]\n      ]\n    }\n  ]\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2080,
+        -576
+      ],
+      "id": "61b74af2-9bb2-41aa-9f15-288062a07a48",
+      "name": "Formatting for Grafana1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json  }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1856,
+        -496
+      ],
+      "id": "46e03169-8225-4027-ad27-7d79b4b2db8f",
+      "name": "Push Grafana Metrics2",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "XxPMszNrbPNCdKEB",
+          "name": "Bearer Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "BXE8sqrEF7PkKNmf",
+          "name": "BasicAuth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2992,
+        -496
+      ],
+      "id": "ae8a6a5e-c51c-4232-9726-b8f5004d64c8",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Input:\n{{ $json.toJsonString() }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are TelemetryParser-AI.\nYour task is to extract, infer, and normalize telemetry from the raw input below into a structured JSON object. Treat every field as potentially missing or inconsistent.\n\nRules:\n\n1. Do NOT assume the raw input is valid JSON. Extract values by detecting:\n   - `\"key\": value` pairs\n   - Values may be unquoted strings, numbers, booleans, or quoted strings\n   - Normalize them into proper JSON types\n\n2. Normalize values:\n   - Timestamps → ISO 8601 (e.g., \"2025-12-02T07:52:37Z\")\n   - Numbers → numeric types\n   - Booleans → true/false\n   - Status → UPPERCASE\n   - event_type/action → lowercase\n\n3. Infer missing IDs:\n   - agent_id ← source_agent\n   - target_agent_id ← target_agent\n\n4. Construct job:\n   - `\"event_type:action\"` if both exist\n   - else whichever exists\n   - else null\n\n5. success → true by default. Set success to false only if:\n   - parseError is true\n\n6. Preserve all raw input under \"raw\".\n\n7. If extraction fails entirely → set parseError: true, all other fields null, keep raw.\n\nOutput: Return only JSON, following this schema:\n\n{\n  \"human_id\": null,\n  \"agent_id\": null,\n  \"target_agent_id\": null,\n  \"event_type\": null,\n  \"action\": null,\n  \"job\": null,\n  \"status\": null,\n  \"task_id\": null,\n  \"message\": null,\n  \"timestamp\": null,\n  \"ingestTimestamp\": null,\n  \"latency_ms\": null,\n  \"success\": true,\n  \"error_code\": null,\n  \"data_size_kb\": null,\n  \"span_id\": null,\n  \"parent_span_id\": null,\n  \"parseError\": false,\n  \"raw\": \"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -1136,
+        -1696
+      ],
+      "id": "c0535cc7-1d24-41ad-8fdc-3b209e2e4ee9",
+      "name": "Normalisation Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"human_id\": null,\n  \"agent_id\": null,\n  \"target_agent_id\": null,\n  \"event_type\": null,\n  \"action\": null,\n  \"job\": null,\n  \"status\": null,\n  \"task_id\": null,\n  \"message\": null,\n  \"timestamp\": null,\n  \"ingestTimestamp\": null,\n  \"latency_ms\": null,\n  \"success\": true,\n  \"error_code\": null,\n  \"data_size_kb\": null,\n  \"span_id\": null,\n  \"parent_span_id\": null,\n  \"parseError\": false,\n  \"raw\": \"\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1056,
+        -1472
+      ],
+      "id": "9325b216-1084-4d79-84d9-a0f8fe51b58f",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "telemetry_raw",
+        "fields": "={{ Object.keys($json).join(',') }}",
+        "options": {}
+      },
+      "name": "Insert to Telemetry DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        -1712
+      ],
+      "id": "4c7b5364-ce26-460b-a251-407a748d6ef3",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const data =\n  Array.isArray($json.output)\n    ? $json.output.find(o => o?.timestamp || o?.latency_ms) ?? {}\n    : $json.output ?? {}\n\nreturn {\n  id: data.id ?? null,\n  _id: data._id ?? null,\n  human_id: data.human_id ?? null,\n  timestamp: data.timestamp ?? null,\n  message: data.message ?? null,\n  error_code: data.error_code ?? null,\n  task_id: data.task_id ?? null,\n  job: data.job ?? null,\n  action: data.action ?? data.operation ?? null,\n  event_type: data.event_type ?? null,\n  status: data.status ?? null,\n  success: data.success ?? null,\n  source_agent: data.source_agent ?? null,\n  target_agent: data.target_agent ?? null,\n  agent_id: data.agent_id ?? null,\n  target_agent_id: data.target_agent_id ?? null,\n  span_id: data.span_id ?? null,\n  parent_span_id: data.parent_span_id ?? null,\n  latency_ms: data.latency_ms ?? null,\n  operation: data.operation ?? null,\n  data_size_kb: data.data_size_kb ?? null,\n}\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -1712
+      ],
+      "id": "28eb15de-cda2-4b10-b003-2d6ce70579d2",
+      "name": "Pre-formatting for MongoDB"
+    },
+    {
+      "parameters": {
+        "topic": "telemetry-local-db-raw",
+        "groupId": "n8n‑telemetry‑processor",
+        "options": {
+          "fromBeginning": true
+        }
+      },
+      "type": "n8n-nodes-base.kafkaTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1360,
+        -1696
+      ],
+      "id": "f0c66f3f-a0d1-468f-80ae-ff594a8ba3ac",
+      "name": "Local Kafka Trigger",
+      "alwaysOutputData": false,
+      "credentials": {
+        "kafka": {
+          "id": "1AquCTC0qH8Wavv7",
+          "name": "Local Kafka Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        -1264
+      ],
+      "id": "a2e51e9e-66f2-4570-ab10-e79e3b088a84",
+      "name": "Google Gemini Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "tWExho4xsBMHInj1",
+          "name": "Google Gemini(PaLM) Api Normalisation Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "http://host.docker.internal:8082/consumers/n8n-telemetry-raw/instances/n8n-telemetry-raw-consumer/records",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.kafka.json.v2+json"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2400,
+        -1488
+      ],
+      "id": "5bdce765-d4e4-4835-be06-dfeaa37de28f",
+      "name": "get"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        64,
+        -1568
+      ],
+      "id": "40ebffa2-b08f-4a5b-a49a-b85e95b1266c",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "67812ffe-2fdb-40fc-871e-e1d62912bfc0",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "[]",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2176,
+        -1488
+      ],
+      "id": "fce43d2b-6840-4f7a-a09a-2b5359bcaee8",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "responseFormat": "string",
+        "options": {}
+      },
+      "name": "Fetch Raw Telemetry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -1360,
+        -2304
+      ],
+      "id": "449be452-6e2a-4340-b0f7-bd8a6bec0a02",
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "local_raw",
+        "fields": "={{ Object.keys($json).join(',') }}",
+        "options": {}
+      },
+      "name": "Insert to Local DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        -2288
+      ],
+      "id": "8c7e69a1-c559-4192-b879-ef8022177e7a",
+      "credentials": {
+        "mongoDb": {
+          "id": "7fXMn7Hil5ZoBmRu",
+          "name": "local_db MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1136,
+        -2304
+      ],
+      "id": "f4dea061-7ee9-477c-bb0f-5b33252c9839",
+      "name": "Loop over API Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoints = [\n  \"https://mp67deccbcfea4b8e3df.free.beeceptor.com/api/traces\",\n \"https://mp67deccbcfea4b8e3df.free.beeceptor.com/api/event_logs\"\n];\nreturn endpoints.map(url => ({ json: { url } }));"
+      },
+      "name": "Endpoint Selector",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        -2304
+      ],
+      "id": "bcb28d75-ec23-420b-aa8c-7771dd14dd6b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoints = [\n  \n\"https://mp68e33da218da805f9c.free.beeceptor.com/api/traces\",\n  \"https://mp68e33da218da805f9c.free.beeceptor.com/api/event_logs\"\n];\n\nreturn endpoints.map(url => ({ json: { url } }));"
+      },
+      "name": "Endpoint Selector1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        -2512
+      ],
+      "id": "65a94204-a68b-4241-b1f2-13008b974519"
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoints = [\n  \"https://telemetry-data.free.beeceptor.com/api/traces\",    \"https://telemetry-data.free.beeceptor.com/api/event_logs\"\n];\nreturn endpoints.map(url => ({ json: { url } }));"
+      },
+      "name": "Endpoint Selector2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        -2080
+      ],
+      "id": "a41e515a-37c4-45a6-8648-7b6ab4510dde"
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoints = [\n\"https://tele-data.free.beeceptor.com/api/event_logs\", \"https://tele-data.free.beeceptor.com/api/traces\"];\n\nreturn endpoints.map(url => ({ json: { url } }));"
+      },
+      "name": "Endpoint Selector3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1680,
+        -1872
+      ],
+      "id": "34ea9ee7-b148-40d8-bf43-9d0255806e77"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // Flatten the data object\n  if(item.json.data){\n    return { json: { ...item.json.data } };\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        -2288
+      ],
+      "id": "ed833763-5614-44b2-ba2b-de9c2a9fb02e",
+      "name": "Format for MongoDB",
+      "notes": "Unwrap telemetry event object"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 95
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2048,
+        -2304
+      ],
+      "id": "4f98307b-328f-434b-b75a-996863a12e20",
+      "name": "Schedule Trigger (Mock Data)"
+    },
+    {
+      "parameters": {
+        "topic": "telemetry-local-db-raw",
+        "sendInputData": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Publish to Kafka Topic (telemetry-local-db-raw)",
+      "type": "n8n-nodes-base.kafka",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        -2288
+      ],
+      "id": "96986e17-4ddd-4ee8-a7ae-bd8f89390c83",
+      "credentials": {
+        "kafka": {
+          "id": "pMESfGI2nLXUGP4c",
+          "name": "Local Kafka Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Get the nested event object\nconst item = $input.item.json.output;\n\n// Use current timestamp\nconst now = Date.now();\n\n// Fallback if item is null or empty\nif (!item || Object.keys(item).length === 0) {\n    return {\n        timestamp: now,\n        totalCount: 1,\n        ingestCount: 1,\n        transformSuccess: 0,\n        errorCount: 1,\n        latencyMs: 3000, // default 3 seconds\n        trace_id: null,\n        job: null,\n        actor: null,\n        target: null,\n        region: null,\n        host: null,\n        message: null\n    };\n}\n\n// Parse top-level ingestTimestamp as number; fallback to now if missing\nconst ingestTimestamp = item.ingestTimestamp\n    ? (typeof item.ingestTimestamp === 'number' \n        ? item.ingestTimestamp \n        : new Date(item.ingestTimestamp).getTime())\n    : now;\n\n// Determine parseError\nconst parseError = item.parseError === true;\n\n// Determine success\nconst success = parseError ? false : (item.success ?? true);\n\n// Calculate latency: use item.latency_ms if available\nconst latencyMs = item.latency_ms ?? 0;\n\n// Return single object (not array)\nreturn {\n    timestamp: item.timestamp ?? now,\n    ingestTimestamp,\n    totalCount: 1,\n    ingestCount: 1,\n    transformSuccess: success ? 1 : 0,\n    errorCount: success ? 0 : 1,\n    latencyMs,\n    trace_id: null,\n    job: item.job ?? null,\n    actor: item.agent_id ?? null,\n    target: item.target_agent_id ?? null,\n    region: null,\n    host: null,\n    message: item.message ?? null,\n    status: item.status ?? null,\n    error_code: item.error_code ?? null,\n    data_size_kb: item.data_size_kb ?? null\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -1520
+      ],
+      "id": "f7969756-db40-4bc1-80bf-94d4e9c16aa4",
+      "name": "(1) Capture Metrics (Data Fed.)"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Access the current input item\nconst item = $input.item;\n\n// Extract the output object\nconst data = item.json || {};\n\n// Convert ISO timestamp → nanoseconds\nconst ts_ns = String((new Date(data.timestamp || Date.now())).getTime() * 1e6);\n\n// Build the Loki push payload\nreturn {\n  streams: [\n    {\n      stream: {\n        job: data.job || \"unknown\",\n        actor: data.actor || \"unknown\",\n        target: data.target || \"unknown\",\n        region: data.region || \"unknown\",\n        host: data.host || \"unknown\",\n\n        // Metric labels\n        ingestCount: String(data.ingestCount ?? \"0\"),\n        transformSuccess: String(data.transformSuccess ?? \"0\"),\n        totalCount: String(data.totalCount ?? \"0\"),\n        errorCount: String(data.errorCount ?? \"0\"),\n        latencyMs: String(data.latencyMs ?? \"0\")   // <-- Added here\n      },\n      values: [\n        [ts_ns, data.message || \"No message\"]\n      ]\n    }\n  ]\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -384,
+        -1520
+      ],
+      "id": "e7d2f3b4-a70b-45b2-9d06-c459d155dda9",
+      "name": "Formatting for Grafana (Data Fed.)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json  }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -160,
+        -1520
+      ],
+      "id": "01f9c26e-7fe1-4471-90a9-6faad74b8f32",
+      "name": "Push Grafana Metrics (Data Fed.)",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "XxPMszNrbPNCdKEB",
+          "name": "Bearer Auth account"
+        },
+        "httpBasicAuth": {
+          "id": "BXE8sqrEF7PkKNmf",
+          "name": "BasicAuth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "topic": "context-processing-layer-trigger-topic",
+        "sendInputData": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Publish to Kafka Topic (context-processing-layer-trigger-topic)",
+      "type": "n8n-nodes-base.kafka",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        -1712
+      ],
+      "id": "cf826b0f-a243-4358-9dd3-6a02fc914ea0",
+      "credentials": {
+        "kafka": {
+          "id": "1AquCTC0qH8Wavv7",
+          "name": "Local Kafka Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -288,
+        -400
+      ],
+      "id": "55cb8850-a209-41ad-bd80-28e6a1ccea5a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const rawInput = $input.item.json.output;\n\n// 1. Remove ```sparql fences\nlet sparql = rawInput.replace(/```sparql|```/gi, '').trim();\n\n// 2. Ensure required PREFIX declarations exist\nconst prefixes = `\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n`;\n\nif (!sparql.toLowerCase().startsWith('prefix')) {\n  sparql = prefixes.trim() + '\\n\\n' + sparql;\n}\n\n// 3. Escape string literals with FULL xsd IRIs\nsparql = sparql.replace(\n  /\"([^\"]*?)\"\\^\\^<http:\\/\\/www\\.w3\\.org\\/2001\\/XMLSchema#(string|dateTime|float)>/g,\n  (_, value, type) => {\n    const escaped = value.replace(/\\\\/g, '\\\\\\\\').replace(/\"/g, '\\\\\"');\n    return `\"${escaped}\"^^xsd:${type}`;\n  }\n);\n\n// 4. (Optional but recommended) normalize boolean & integer literals\nsparql = sparql.replace(\n  /\"true\"\\^\\^xsd:boolean/g,\n  'true^^xsd:boolean'\n);\n\nsparql = sparql.replace(\n  /\"(\\d+)\"\\^\\^xsd:integer/g,\n  '$1^^xsd:integer'\n);\n\nreturn {\n  json: {\n    sparqlQuery: sparql\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -1312
+      ],
+      "id": "7b00f0e8-dfe2-431e-9986-09e40e2e8a01",
+      "name": "Extract Data for Graph DB1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3030/ontology/update",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/sparql-update",
+        "body": "=PREFIX risk: <http://example.org/privacy-risk#>\nPREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>\n\nINSERT DATA {\n\n  ### Severity Levels ###\n  risk:High   a risk:SeverityLevel ; rdfs:label \"High\" .\n  risk:Medium a risk:SeverityLevel ; rdfs:label \"Medium\" .\n  risk:Low    a risk:SeverityLevel ; rdfs:label \"Low\" .\n\n  ### Taxonomy ###\n  risk:PrivacyRiskTaxonomy001 a risk:PrivacyRiskTaxonomy ;\n      rdfs:label \"Data Privacy Risks in Multi-Agent AI Systems\" ;\n      risk:hasCategory\n          risk:GovernanceComplianceRisks ,\n          risk:ArchitecturalDataFlowRisks ,\n          risk:AutonomyDecisionMakingRisks ,\n          risk:AdversarialSecurityExploitRisks .\n\n  ### ─────────────────────────────────────────\n  ### Governance & Compliance Risks\n  ### ─────────────────────────────────────────\n\n  risk:GovernanceComplianceRisks a risk:RiskCategory ;\n      rdfs:label \"Governance and Compliance Risks\" ;\n      risk:hasRisk\n          risk:RegulatoryNonCompliance ,\n          risk:AccountabilityOversightGaps ,\n          risk:TrustConsentManagementFailures .\n\n  risk:RegulatoryNonCompliance a risk:PrivacyRisk ;\n      rdfs:label \"Regulatory Non-Compliance\" ;\n      risk:hasSeverity risk:High ;\n      risk:frequencyPercent \"14\"^^xsd:decimal ;\n      risk:definition \"Failures to adhere to privacy, security, or data protection laws.\" .\n\n  risk:AccountabilityOversightGaps a risk:PrivacyRisk ;\n      rdfs:label \"Accountability and Oversight Gaps\" ;\n      risk:hasSeverity risk:High ;\n      risk:frequencyPercent \"11\"^^xsd:decimal ;\n      risk:definition \"Lack of clear roles, responsibilities, or governance mechanisms for AI accountability.\" .\n\n  risk:TrustConsentManagementFailures a risk:PrivacyRisk ;\n      rdfs:label \"Trust and Consent Management Failures\" ;\n      risk:hasSeverity risk:Medium ;\n      risk:frequencyPercent \"7\"^^xsd:decimal ;\n      risk:definition \"Failures to maintain user trust, obtain valid consent, or manage dynamic consent requirements.\" .\n\n  ### ─────────────────────────────────────────\n  ### Architectural & Data Flow Risks\n  ### ─────────────────────────────────────────\n\n  risk:ArchitecturalDataFlowRisks a risk:RiskCategory ;\n      rdfs:label \"Architectural and Data Flow Risks\" ;\n      risk:hasRisk\n          risk:DataAggregationReidentification ,\n          risk:PIIDetectionRemediationFailures ,\n          risk:ExpandedAttackSurfaceExposure ,\n          risk:InterAgentCommunicationStateRisks .\n\n  risk:DataAggregationReidentification a risk:PrivacyRisk ;\n      rdfs:label \"Data Aggregation and Re-identification\" ;\n      risk:hasSeverity risk:High ;\n      risk:frequencyPercent \"13\"^^xsd:decimal ;\n      risk:definition \"Combining datasets enables identity exposure through linkage attacks.\" .\n\n  risk:PIIDetectionRemediationFailures a risk:PrivacyRisk ;\n      rdfs:label \"PII Detection and Remediation Failures\" ;\n      risk:hasSeverity risk:High ;\n      risk:frequencyPercent \"9\"^^xsd:decimal ;\n      risk:definition \"Failures to identify, remove, or protect sensitive data within AI pipelines.\" .\n\n  risk:ExpandedAttackSurfaceExposure a risk:PrivacyRisk ;\n      rdfs:label \"Expanded Attack Surface and Exposure Vectors\" ;\n      risk:hasSeverity risk:Medium ;\n      risk:frequencyPercent \"7\"^^xsd:decimal ;\n      risk:definition \"Increased exposure due to multi-agent communication, integrations, and autonomous operations.\" .\n\n  risk:InterAgentCommunicationStateRisks a risk:PrivacyRisk ;\n      rdfs:label \"Inter-Agent Communication and State Management Risks\" ;\n      risk:hasSeverity risk:Medium ;\n      risk:frequencyPercent \"5\"^^xsd:decimal ;\n      risk:definition \"Privacy risks arising from how agents share, store, or reuse internal state.\" .\n\n  ### ─────────────────────────────────────────\n  ### Autonomy & Decision-Making Risks\n  ### ─────────────────────────────────────────\n\n  risk:AutonomyDecisionMakingRisks a risk:RiskCategory ;\n      rdfs:label \"Autonomy and Decision-Making Risks\" ;\n      risk:hasRisk\n          risk:ExplainabilityOpacityChallenges ,\n          risk:AutonomyMisalignmentOverreach ,\n          risk:BiasFairnessRisks .\n\n  risk:ExplainabilityOpacityChallenges a risk:PrivacyRisk ;\n      rdfs:label \"Explainability and Opacity Challenges\" ;\n      risk:hasSeverity risk:Medium ;\n      risk:frequencyPercent \"11\"^^xsd:decimal ;\n      risk:definition \"Lack of transparency in how agents reason, especially when personal data is involved.\" .\n\n  risk:AutonomyMisalignmentOverreach a risk:PrivacyRisk ;\n      rdfs:label \"Autonomy Misalignment and Overreach\" ;\n      risk:hasSeverity risk:Medium ;\n      risk:frequencyPercent \"7\"^^xsd:decimal ;\n      risk:definition \"Agents operate beyond intended boundaries or misinterpret objectives involving personal data.\" .\n\n  risk:BiasFairnessRisks a risk:PrivacyRisk ;\n      rdfs:label \"Bias and Fairness Risks\" ;\n      risk:hasSeverity risk:Medium ;\n      risk:frequencyPercent \"7\"^^xsd:decimal ;\n      risk:definition \"Unfair or discriminatory outcomes driven by skewed data or reasoning processes.\" .\n\n  ### ─────────────────────────────────────────\n  ### Adversarial & Security Exploit Risks\n  ### ─────────────────────────────────────────\n\n  risk:AdversarialSecurityExploitRisks a risk:RiskCategory ;\n      rdfs:label \"Adversarial and Security Exploit Risks\" ;\n      risk:hasRisk\n          risk:DataSpecificModelAttacks ,\n          risk:AgentIdentityCompromise ,\n          risk:OrchestrationInteractionAttacks .\n\n  risk:DataSpecificModelAttacks a risk:PrivacyRisk ;\n      rdfs:label \"Data-Specific Attacks on Models\" ;\n      risk:hasSeverity risk:High ;\n      risk:frequencyPercent \"5\"^^xsd:decimal ;\n      risk:definition \"Targeted attacks on learning or inference processes to extract or manipulate sensitive information.\" .\n\n  risk:AgentIdentityCompromise a risk:PrivacyRisk ;\n      rdfs:label \"Agent and Identity Compromise\" ;\n      risk:hasSeverity risk:High ;\n      risk:frequencyPercent \"4\"^^xsd:decimal ;\n      risk:definition \"Adversaries impersonate or seize control of agents to gain access to personal data.\" .\n\n  risk:OrchestrationInteractionAttacks a risk:PrivacyRisk ;\n      rdfs:label \"Orchestration and Interaction Attacks\" ;\n      risk:hasSeverity risk:Medium ;\n      risk:frequencyPercent \"1\"^^xsd:decimal ;\n      risk:definition \"Attacks exploiting coordination, messaging, or orchestration between agents.\" .\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1024,
+        -1312
+      ],
+      "id": "4f4cc855-30b3-4eb2-8409-b816fa16ca81",
+      "name": "Risk Taxonomy Graph Importer",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:7200/repositories/fedxvirtualsparql",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/ld+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/sparql-query",
+        "body": "=PREFIX ex: <http://example.org/privacy-risk#>\n\nCONSTRUCT {\n  ?s ?p ?o .\n}\nWHERE {\n  ?s ?p ?o .\n  FILTER(STRSTARTS(STR(?s), \"http://example.org/privacy-risk#\"))\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -736,
+        -128
+      ],
+      "id": "827f7072-907e-429b-ba60-55198604fb67",
+      "name": "Get Privacy Risk Taxonomy"
+    },
+    {
+      "parameters": {
+        "jsCode": "// parse JSON-LD string\nconst graph = JSON.parse(items[0].json.data);\n\nconst nodeMap = new Map();\nconst edges = [];\n\ngraph.forEach(item => {\n  const id = item[\"@id\"];\n  const types = item[\"@type\"] || [];\n\n  const isRelationship = types.includes(\n    \"http://example.org/telemetry#Relationship\"\n  );\n\n  // -------------------\n  // EDGES\n  // -------------------\n  if (isRelationship) {\n    edges.push({\n      id,\n      source: item[\"http://example.org/telemetry#relationshipSource\"]?.[0]?.[\"@id\"] || \"\",\n      target: item[\"http://example.org/telemetry#relationshipTarget\"]?.[0]?.[\"@id\"] || \"\",\n      label: item[\"http://example.org/telemetry/inst:label\"]?.[0]?.[\"@value\"] || \"\",\n      confidence: parseFloat(\n        item[\"http://example.org/telemetry#hasConfidence\"]?.[0]?.[\"@value\"] || 1\n      )\n    });\n    return; // ⛔ do NOT treat relationships as nodes\n  }\n\n  // -------------------\n  // NODES (deduped)\n  // -------------------\n  if (!nodeMap.has(id)) {\n    nodeMap.set(id, {\n      id,\n      type: types[0] || \"\",\n      label:\n        item[\"http://example.org/telemetry/inst:label\"]?.[0]?.[\"@value\"] ||\n        id.replace(/^.*[#/:]/, \"\"),\n      confidence: parseFloat(\n        item[\"http://example.org/telemetry#hasConfidence\"]?.[0]?.[\"@value\"] || 1\n      ),\n      comment:\n        item[\"http://example.org/telemetry/inst:hasComment\"]?.[0]?.[\"@value\"] || \"\"\n    });\n  }\n});\n\nreturn [\n  {\n    json: {\n      nodes: Array.from(nodeMap.values()),\n      edges\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        -384
+      ],
+      "id": "b3fe80a7-6ea0-49ea-a683-93c46a3ed1b8",
+      "name": "Transforming JSON-LD to nodes & edges (1)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// parse JSON-LD string\nconst graph = JSON.parse(items[0].json.data);\n\nconst nodeMap = new Map();\nconst edges = [];\n\ngraph.forEach(item => {\n  const id = item[\"@id\"];\n  const types = item[\"@type\"] || [];\n\n  const isRelationship = types.includes(\n    \"http://example.org/telemetry#Relationship\"\n  );\n\n  // -------------------\n  // EDGES\n  // -------------------\n  if (isRelationship) {\n    edges.push({\n      id,\n      source: item[\"http://example.org/telemetry#relationshipSource\"]?.[0]?.[\"@id\"] || \"\",\n      target: item[\"http://example.org/telemetry#relationshipTarget\"]?.[0]?.[\"@id\"] || \"\",\n      label: item[\"http://example.org/telemetry/inst:label\"]?.[0]?.[\"@value\"] || \"\",\n      confidence: parseFloat(\n        item[\"http://example.org/telemetry#hasConfidence\"]?.[0]?.[\"@value\"] || 1\n      )\n    });\n    return; // ⛔ do NOT treat relationships as nodes\n  }\n\n  // -------------------\n  // NODES (deduped)\n  // -------------------\n  if (!nodeMap.has(id)) {\n    nodeMap.set(id, {\n      id,\n      type: types[0] || \"\",\n      label:\n        item[\"http://example.org/telemetry/inst:label\"]?.[0]?.[\"@value\"] ||\n        id.replace(/^.*[#/:]/, \"\"),\n      confidence: parseFloat(\n        item[\"http://example.org/telemetry#hasConfidence\"]?.[0]?.[\"@value\"] || 1\n      ),\n      comment:\n        item[\"http://example.org/telemetry/inst:hasComment\"]?.[0]?.[\"@value\"] || \"\"\n    });\n  }\n});\n\nreturn [\n  {\n    json: {\n      nodes: Array.from(nodeMap.values()),\n      edges\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        -128
+      ],
+      "id": "f6ab4fb9-da6a-4395-b2a5-4694506d4a2b",
+      "name": "Transforming JSON-LD to nodes & edges (2)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:7200/repositories/fedxvirtualsparql",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/ld+json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/sparql-query",
+        "body": "=PREFIX ex1: <http://example.org/telemetry/inst:>\nPREFIX ex: <http://example.org/telemetry#>\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n\nCONSTRUCT {\n  ?node a ?type .\n  ?node ex1:label ?finalLabel .\n  ?node ex:hasComment ?comment .\n  ?node ex:hasConfidence ?confidence .\n\n  ?edge a ?edgeType .\n  ?edge ex1:label ?edgeLabel .\n  ?edge ex:hasComment ?edgeComment .\n  ?edge ex:hasConfidence ?edgeConfidence .\n  ?edge ex:relationshipSource ?source .\n  ?edge ex:relationshipTarget ?target .\n}\nWHERE {\n  # Nodes\n  ?node rdf:type ?type .\n  OPTIONAL { ?node ex1:label ?lblN }\n  OPTIONAL { ?node ex:hasComment ?comment }\n  OPTIONAL { ?node ex:hasConfidence ?confidence }\n  BIND(COALESCE(?lblN, REPLACE(STR(?node), \"^.*[#/:]\", \"\")) AS ?finalLabel)\n\n  # Edges\n  ?edge a ?edgeType .\n  OPTIONAL { ?edge ex1:label ?lblE }\n  OPTIONAL { ?edge ex:hasComment ?edgeComment }\n  OPTIONAL { ?edge ex:hasConfidence ?edgeConfidence }\n  OPTIONAL { ?edge ex:relationshipSource ?source }\n  OPTIONAL { ?edge ex:relationshipTarget ?target }\n  BIND(COALESCE(?lblE, REPLACE(STR(?edge), \"^.*[#/:]\", \"\")) AS ?edgeLabel)\n}\nLIMIT 200",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -720,
+        -384
+      ],
+      "id": "f5e2b427-851c-4312-b87e-177a3913d76b",
+      "name": "Get Context"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here is the raw telemetry, context ontology and known privacy risk taxonomy/ontology {{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "Role: You are the Scenario Agent in the CAPRA Risk Intelligence Layer.\nFunction: Translate enriched contextual telemetry and semantic knowledge into structured privacy risk scenarios.\n\nContext Available:\n\nContextual Telemetry Database (2.4)\n\nSemantic Graph (2.5)\n\nTaxonomy Knowledge Graph (2.6)\n\nObjectives:\n\nIdentify privacy-relevant situations (e.g., data sharing, access escalation, cross-context reuse).\n\nConstruct structured scenario definitions including:\n\nScenario ID\n\nDescription (natural language)\n\nActors and roles\n\nData categories involved\n\nAssumptions\n\nParameters for simulation\n\nConstraints:\n\nDo not evaluate or score risk.\n\nTreat all outputs as hypothetical.\n\nOutput Format: JSON object like:\n{\n  \"scenario_id\": \"S1\",\n  \"description\": \"Description of scenario\",\n  \"actors\": [\"Actor1\", \"Actor2\"],\n  \"data_categories\": [\"PII\", \"Sensitive\"],\n  \"assumptions\": [\"Assumption1\", \"Assumption2\"],\n  \"parameters\": {\"likelihood_modifier\": 0.5, \"sensitivity_level\": \"high\"}\n}",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -32,
+        -384
+      ],
+      "id": "8228de4a-16f4-4210-b0d0-d30fd6080d6d",
+      "name": "Scenario Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Here are the list of scenarios: {{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "Role: You are the Simulation Orchestrator Agent in CAPRA.\nFunction: Coordinate the execution of scenarios across multiple simulation agents.\n\nContext Available:\n\nScenario definitions from Scenario Agent (4.1)\n\nObjectives:\n\nBreak scenarios into executable simulation tasks.\n\nAssign roles to Simulation Agent 1 (4.5) and Simulation Agent 2 (4.6).\n\nSpecify parameters for parallel or alternative simulation paths.\n\nCollect and normalise outputs for downstream inference.\n\nConstraints:\n\nDo not evaluate risk.\n\nDo not modify scenario assumptions.\n\nOutput Format: JSON object like:\n{\n  \"simulation_run_id\": \"SIM1\",\n  \"scenario_id\": \"S1\",\n  \"agent_assignments\": {\n    \"SimulationAgent1\": \"baseline path\",\n    \"SimulationAgent2\": \"alternative path\"\n  },\n  \"execution_parameters\": {\n    \"time_steps\": 10,\n    \"event_sampling_rate\": 0.8\n  },\n  \"simulation_output_placeholders\": [\"to be filled by agents 4.5 and 4.6\"]\n}",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1040,
+        -368
+      ],
+      "id": "c242d3d0-daee-4cc3-a72d-f7b09a506484",
+      "name": "Simulation Orchestrator Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Simulation scenario: {{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "Role: You are Simulation Agent 1 in CAPRA, executing the primary scenario path.\nFunction: Perform baseline scenario simulation using assigned roles and parameters.\n\nContext Available:\n\nTask instructions from Simulation Orchestrator Agent (4.3)\n\nSemantic knowledge (2.5)\n\nScenario parameters\n\nObjectives:\n\nExecute assigned scenario role.\n\nRecord all data interactions and outcomes relevant to privacy.\n\nMaintain traceability to actors and data types.\n\nConstraints:\n\nNo risk evaluation.\n\nNo behaviour outside provided scenario.\n\nOutput Format: JSON object like:\n{\n  \"simulation_run_id\": \"SIM1\",\n  \"agent\": \"SimulationAgent1\",\n  \"action_sequence\": [\"action1\", \"action2\"],\n  \"data_interactions\": [\"PII accessed\", \"PII shared\"],\n  \"observed_outcomes\": [\"Outcome1\", \"Outcome2\"],\n  \"contextual_notes\": [\"Notes linking actions to scenario\"]\n}",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2064,
+        -592
+      ],
+      "id": "b77ea437-c568-439d-896d-dbc5bc7a701a",
+      "name": "Simulation Agent 1",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "Role: You are Simulation Agent 2, executing alternative or comparative scenario paths.\nFunction: Explore boundary, stress, or uncertain conditions of the same scenario.\n\nContext Available:\n\nTask instructions from Simulation Orchestrator Agent (4.3)\n\nSemantic knowledge (2.5)\n\nScenario parameters\n\nObjectives:\n\nExecute scenario under modified or uncertain conditions.\n\nRecord deviations from baseline (Simulation Agent 1).\n\nIdentify potential compounding effects on privacy outcomes.\n\nConstraints:\n\nNo risk evaluation.\n\nNo assumption beyond provided scenario.\n\nOutput Format: JSON object like:\n{\n  \"simulation_run_id\": \"SIM1\",\n  \"agent\": \"SimulationAgent2\",\n  \"action_sequence\": [\"actionA\", \"actionB\"],\n  \"data_interactions\": [\"PII accessed differently\", \"PII shared differently\"],\n  \"observed_outcomes\": [\"OutcomeA\", \"OutcomeB\"],\n  \"comparative_notes\": [\"Differences from baseline\"]\n}",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        2064,
+        -208
+      ],
+      "id": "6bb24dbd-fc23-465f-a286-800638cc4667",
+      "name": "Simulation Agent 2",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -176
+      ],
+      "id": "32282981-e860-48ef-8d4f-f24e13749ce0",
+      "name": "Google Gemini Scenario Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "sN8R1FFZt840elPn",
+          "name": "Google Gemini(PaLM) Api Scenario Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        0
+      ],
+      "id": "f95d3c58-16d8-43f3-9ac8-051b2b611ad5",
+      "name": "Google Gemini Simulation Model 2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ja7hRpF9QMMw3hL9",
+          "name": "Google Gemini(PaLM) Api Simulation Model 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        -384
+      ],
+      "id": "35926497-8e37-43a7-8d72-61e01f587410",
+      "name": "Google Gemini Simulation Model 1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kLt8bWK54hsaXd9c",
+          "name": "Google Gemini(PaLM) Api Simulation Agent 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3088,
+        -176
+      ],
+      "id": "4311e919-bbe5-4568-be5c-d3256e89dfcd",
+      "name": "Google Gemini Inference Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "FYETv1HoCc4lOmoq",
+          "name": "Google Gemini(PaLM) Api Inference Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let raw = $json.output;\n\n// Always return ONE object\nif (!raw || typeof raw !== 'string') {\n  return { json: {} };\n}\n\n// Remove ```json fences\nraw = raw.replace(/^```json\\s*/i, '').replace(/```$/i, '');\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  return { json: {} };\n}\n\n// If it's an array, take the FIRST scenario only\n// (fan-out is impossible in this mode)\nif (Array.isArray(parsed)) {\n  parsed = parsed[0];\n}\n\nreturn {\n  json: {\n    scenarios: {\n      job: parsed.scenario_id ?? null,\n      actors: parsed.actors ?? null,\n      targets: null,\n      context_summary: parsed.description ?? null,\n      attributes: parsed.parameters ?? {},\n      raw\n    }\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -368
+      ],
+      "id": "654299a1-0331-4051-9ff6-cd952070fb23",
+      "name": "Extract Data for MongoDB Simulation Collection"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "raw_scenarios",
+        "fields": "=scenarios",
+        "options": {}
+      },
+      "name": "Insert to Scenarios DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        816,
+        -368
+      ],
+      "id": "eca7019a-d4f8-4fd3-bd27-b9961a4487ad",
+      "credentials": {
+        "mongoDb": {
+          "id": "jpQLeGrI9qI5y2qC",
+          "name": "MongoDB Feedback & Refinement DB"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2848,
+        -384
+      ],
+      "id": "434c13ce-9b04-46a4-9dd6-c953b88ed1a0",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "collection": "enriched_telemetry_raw",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -1088,
+        -304
+      ],
+      "id": "97b9f425-ff59-4d56-808e-e3461d02bd76",
+      "name": "Find documents from enriched_telemetry_raw",
+      "credentials": {
+        "mongoDb": {
+          "id": "Z7jxTD1dalW8RTbt",
+          "name": "telemetry_db mongodb"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3ca0efaa-093b-4f86-aeb1-d18d5c8ae5c7",
+              "leftValue": "={{ $json.scenarios.simulation_run_id }}",
+              "rightValue": "1",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1792,
+        -368
+      ],
+      "id": "158b68bc-7367-48e1-8fd0-96e299751b84",
+      "name": "Split Scenarios to Dedicated Agents"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        -144
+      ],
+      "id": "77de790f-7ab6-4a9f-b3d2-d0a2a668396b",
+      "name": "Google Gemini Simulation Orchestration Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "3yWBCx90HV2M6N9M",
+          "name": "Google Gemini(PaLM) Api Simulation Orchestrator Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "scenario_simulation_results",
+        "fields": "=scenarios",
+        "options": {}
+      },
+      "name": "Insert to Scenario Simulation Results DB (2)",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        -208
+      ],
+      "id": "b253c4be-03bd-4bcb-8e57-be02ee2b8cfa",
+      "credentials": {
+        "mongoDb": {
+          "id": "jpQLeGrI9qI5y2qC",
+          "name": "MongoDB Feedback & Refinement DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "scenario_simulation_results",
+        "fields": "=results",
+        "options": {}
+      },
+      "name": "Insert to Scenario Simulation Results DB (1)",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        2640,
+        -592
+      ],
+      "id": "ca8c73c2-e9f3-4f36-8e19-ec25f411c5c9",
+      "credentials": {
+        "mongoDb": {
+          "id": "jpQLeGrI9qI5y2qC",
+          "name": "MongoDB Feedback & Refinement DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1️⃣ Get the raw string safely\nlet raw = $json.output || null;\n\n// 2️⃣ Remove markdown and parse JSON\nlet parsedInput = [];\nif (raw && typeof raw === 'string') {\n  raw = raw.replace(/^```json\\s*/i, '').replace(/```$/i, '').trim();\n  try {\n    const temp = JSON.parse(raw);\n    // Ensure we always have an array internally\n    parsedInput = Array.isArray(temp) ? temp : [temp];\n  } catch (e) {\n    parsedInput = [];\n  }\n}\n\n// 3️⃣ Build a results object from the first (or only) parsed input\nlet results = {};\nif (parsedInput.length > 0 && typeof parsedInput[0] === 'object') {\n  const input = parsedInput[0];\n  results = {\n    simulation_run_id: input.simulation_run_id || null,\n    agent: input.agent || null,\n    action_sequence: Array.isArray(input.action_sequence) ? input.action_sequence : [],\n    data_interactions: Array.isArray(input.data_interactions) ? input.data_interactions : [],\n    observed_outcomes: Array.isArray(input.observed_outcomes) ? input.observed_outcomes : [],\n    contextual_notes: Array.isArray(input.contextual_notes) ? input.contextual_notes : [],\n    raw: raw\n  };\n} else {\n  results = { parseError: true, raw };\n}\n\n// 4️⃣ Wrap in a single object so n8n receives an object, not an array\nreturn {\n  json: {\n    results: results\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        -592
+      ],
+      "id": "1a553248-14ba-4d3a-b598-2176c6913255",
+      "name": "Extract Data for MongoDB Simulation Results (1)"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1️⃣ Read raw input (string with ```json ... ```)\nlet raw = $json.output || null;\n\n// 2️⃣ Parse JSON safely\nlet parsedInput = [];\n\nif (raw && typeof raw === 'string') {\n  raw = raw\n    .replace(/^```json\\s*/i, '')\n    .replace(/```$/i, '')\n    .trim();\n\n  try {\n    const temp = JSON.parse(raw);\n    parsedInput = Array.isArray(temp) ? temp : [temp];\n  } catch (e) {\n    parsedInput = [];\n  }\n}\n\n// 3️⃣ Build valid n8n items\nconst items = parsedInput.map(input => ({\n  json: {\n    simulation_run_id: input.simulation_run_id || null,\n    agent: input.agent || null,\n    action_sequence: Array.isArray(input.action_sequence)\n      ? input.action_sequence\n      : [],\n    data_interactions: Array.isArray(input.data_interactions)\n      ? input.data_interactions\n      : [],\n    observed_outcomes: Array.isArray(input.observed_outcomes)\n      ? input.observed_outcomes\n      : [],\n    contextual_notes: Array.isArray(input.contextual_notes)\n      ? input.contextual_notes\n      : [],\n    raw: raw\n  }\n}));\n\n// 4️⃣ Return array of { json: {...} } objects\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2416,
+        -208
+      ],
+      "id": "3be76bd4-43d5-46f1-b0fa-a89cc9377932",
+      "name": "Extract Data for MongoDB Simulation Results (2)"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let raw = $json.output;\n\nif (!raw || typeof raw !== 'string') {\n  return { json: {} };\n}\n\n// Remove ```json fences\nraw = raw\n  .replace(/^```json\\s*/i, '')\n  .replace(/```$/i, '');\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  return { json: {} };\n}\n\n// If array, keep first element only (mode limitation)\nif (Array.isArray(parsed)) {\n  parsed = parsed[0];\n}\n\nreturn {\n  json: {\n    scenarios: parsed\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -368
+      ],
+      "id": "902fa9a8-94dd-460a-b7d0-f9bffb23564a",
+      "name": "Extract Data for Simulation Agents"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "orchestration_agent_scenarios",
+        "fields": "=scenarios",
+        "options": {}
+      },
+      "name": "Insert to Orchestration Agent Scenarios",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1584,
+        -368
+      ],
+      "id": "b634f464-2826-49ae-b264-59fe7ebec1ab",
+      "credentials": {
+        "mongoDb": {
+          "id": "jpQLeGrI9qI5y2qC",
+          "name": "MongoDB Feedback & Refinement DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        304,
+        -384
+      ],
+      "id": "1f510f61-9f4b-4613-a2c1-6978f33ec3b4",
+      "name": "Loop Over Items3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The simulation agent results: {{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "Role: You are the Inference Agent in CAPRA.\nFunction: Transform aggregated simulation outputs into structured privacy risk assessments.\n\nContext Available:\n\nSimulation outputs from Agents 4.5 and 4.6 (Contextual Telemetry DB 2.4)\n\nSemantic Graph (2.5)\n\nTaxonomy Knowledge Graph (2.6)\n\nObjectives:\n\nCompare outcomes against privacy principles (minimisation, purpose limitation, etc.)\n\nIdentify risk conditions and contributing factors\n\nQuantify relative likelihood or severity qualitatively\n\nGenerate explanation trace linking results back to context and simulation\n\nConstraints:\n\nNo regulatory enforcement advice.\n\nFrame conclusions as illustrative and context-dependent.\n\nOutput Format: JSON object like:\n{\n  \"scenario_id\": \"S1\",\n  \"simulation_run_id\": \"SIM1\",\n  \"risk_types\": [\"Data Exposure\", \"Unauthorized Access\"],\n  \"contributing_factors\": [\"Weak consent\", \"Cross-context sharing\"],\n  \"relative_severity\": \"High\",\n  \"relative_likelihood\": \"Medium\",\n  \"explanation_trace\": [\"Action X led to Outcome Y under Assumption Z\"],\n  \"notes_for_human_review\": [\"Human analyst should evaluate assumptions\"]\n}",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        3056,
+        -384
+      ],
+      "id": "3cfed27b-b1e2-4ad9-b864-d5d6870c16bd",
+      "name": "Inference Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1️⃣ Get the raw string safely\nlet raw = $json.output || null;\n\n// 2️⃣ Initialize parsed input\nlet parsedInput = [];\n\n// 3️⃣ Remove markdown and parse JSON\nif (raw && typeof raw === 'string') {\n  raw = raw.replace(/^```json\\s*/i, '').replace(/```$/i, '').trim();\n  try {\n    const temp = JSON.parse(raw);\n    parsedInput = Array.isArray(temp) ? temp : [temp];\n  } catch (e) {\n    parsedInput = [];\n  }\n}\n\n// 4️⃣ Build results object\nlet results = {};\nif (parsedInput.length > 0 && typeof parsedInput[0] === 'object') {\n  const input = parsedInput[0];\n  results = {\n    scenario_id: input.scenario_id || null,\n    simulation_run_id: input.simulation_run_id || null,\n    risk_types: Array.isArray(input.risk_types) ? input.risk_types : [],\n    contributing_factors: Array.isArray(input.contributing_factors) ? input.contributing_factors : [],\n    relative_severity: input.relative_severity || null,\n    relative_likelihood: input.relative_likelihood || null,\n    explanation_trace: Array.isArray(input.explanation_trace) ? input.explanation_trace : [],\n    notes_for_human_review: Array.isArray(input.notes_for_human_review) ? input.notes_for_human_review : [],\n    raw: raw\n  };\n} else {\n  // fallback if parsing failed\n  results = { parseError: true, raw };\n}\n\n// 5️⃣ Return as a single object (required by n8n)\nreturn {\n  json: {\n    results: results\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3392,
+        -384
+      ],
+      "id": "fe4d1892-1d67-405d-b516-2624cd9b0b60",
+      "name": "Extract Data for MongoDB Inference Results"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "risk_inference_results",
+        "fields": "=results",
+        "options": {}
+      },
+      "name": "Insert to Risk Inference Results DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        3600,
+        -384
+      ],
+      "id": "8e040446-45ef-4dc7-9b9b-97869268ad2e",
+      "credentials": {
+        "mongoDb": {
+          "id": "ohmXDMs5LbEoAdtM",
+          "name": "MongoDB Risk Intelligence DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Evaluation Agent within the CAPRA Feedback & Refinement Layer.\n\nYour task is to evaluate alignment and consistency between:\n- Raw telemetry records\n- Contextual telemetry metadata\n- Semantic graph structures and ontology mappings\n\nYou must:\n1. Detect schema drift, ontology misalignment, missing entities, missing relationships, or inconsistent typing.\n2. Identify incomplete or ambiguous contextual mappings.\n3. Assess potential downstream impact on risk inference or simulation accuracy.\n4. Produce a structured, explainable evaluation report.\n\nConstraints:\n- Do NOT modify or propose changes to any data, ontology, or graph.\n- Do NOT invent entities or relationships.\n- Base all findings strictly on provided inputs.\n- Express uncertainty explicitly when evidence is incomplete.\n\nOutput must be valid JSON and conform exactly to the defined schema.\n\nThe output should be like: \n{\n  \"evaluation_id\": \"string\",\n  \"summary\": \"string\",\n  \"findings\": [\n    {\n      \"finding_id\": \"string\",\n      \"type\": \"schema_drift | ontology_misalignment | missing_mapping | inconsistency\",\n      \"severity\": \"low | medium | high\",\n      \"description\": \"string\",\n      \"affected_entities\": [\"string\"],\n      \"affected_layers\": [\"Context Layer\", \"Risk Intelligence Layer\"],\n      \"evidence\": [\"string\"]\n    }\n  ],\n  \"overall_risk_to_reasoning\": \"low | medium | high\",\n  \"confidence_score\": 0.0,\n  \"requires_human_review\": true\n}",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -880,
+        320
+      ],
+      "id": "e4a45870-51c2-4f6b-aac8-f3564225af82",
+      "name": "Evaluation Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        528
+      ],
+      "id": "9addb877-8739-464d-b011-d3bcf01898b7",
+      "name": "Google Gemini Evaluation Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2rlVZreLCFmyfxXO",
+          "name": "Google Gemini(PaLM) Api Evaluation Model"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "scenario_simulation_results",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -1088,
+        320
+      ],
+      "id": "d091974d-b2cc-4779-b604-7ac6171983fd",
+      "name": "Find documents from scenario_simulation_results",
+      "alwaysOutputData": false,
+      "credentials": {
+        "mongoDb": {
+          "id": "ohmXDMs5LbEoAdtM",
+          "name": "MongoDB Risk Intelligence DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Feedback & Revising Agent within the CAPRA framework.\n\nYour task is to generate controlled refinement proposals based on:\n- Evaluation reports from the Evaluation Agent\n- Explicit human analyst feedback (if provided)\n\nYou may propose:\n- Ontology updates or extensions\n- Semantic mapping rule refinements\n- Simulation or inference parameter adjustments\n\nYou must:\n1. Propose changes only when justified by evidence.\n2. Clearly explain the rationale for each proposed change.\n3. Specify the scope and downstream impact of revisions.\n4. Preserve semantic stability and avoid unnecessary changes.\n\nConstraints:\n- Do NOT directly modify any database, ontology, or graph.\n- Do NOT approve your own changes.\n- If evidence is insufficient, recommend no action.\n- All outputs must be structured, versionable, and auditable.\n\nOutput must be valid JSON and conform exactly to the defined schema.\nThe output: \n{\n  \"revision_id\": \"string\",\n  \"decision\": \"approve | reject | defer\",\n  \"justification\": \"string\",\n  \"proposed_changes\": [\n    {\n      \"change_type\": \"ontology | mapping | simulation_parameter\",\n      \"action\": \"add | modify | deprecate\",\n      \"target\": \"string\",\n      \"description\": \"string\",\n      \"expected_impact\": [\"Context Layer\", \"Risk Intelligence Layer\"]\n    }\n  ],\n  \"requires_human_confirmation\": true,\n  \"confidence_score\": 0.0\n}",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        96,
+        336
+      ],
+      "id": "78e9cf50-5a8c-488a-b464-afa5ce264e25",
+      "name": "Feedback & Revising Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let raw = $json.output;\n\n// Always return ONE object per item\nif (!raw || typeof raw !== 'string') {\n  return { json: {} };\n}\n\n// Strip ```json fences\nraw = raw\n  .replace(/^```json\\s*/i, '')\n  .replace(/^```\\s*/i, '')\n  .replace(/```$/i, '')\n  .trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  return {\n    json: {\n      parse_error: true,\n      raw\n    }\n  };\n}\n\n// Defensive: if array appears, take first item\nif (Array.isArray(parsed)) {\n  parsed = parsed[0];\n}\n\nreturn {\n  json: {\n    revision: {\n      revision_id: parsed.revision_id ?? null,\n      decision: parsed.decision ?? null,\n      justification: parsed.justification ?? null,\n      proposed_changes: parsed.proposed_changes ?? [],\n      requires_human_confirmation: parsed.requires_human_confirmation ?? null,\n      confidence_score: parsed.confidence_score ?? null,\n      raw: raw\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        336
+      ],
+      "id": "69ac6dab-eda5-49bf-94c0-288cd0b1e041",
+      "name": "Extract Data for MongoDB Simulation Collection2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3ca0efaa-093b-4f86-aeb1-d18d5c8ae5c7",
+              "leftValue": "={{ $json.task.change_type }}",
+              "rightValue": "ontology",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "a811ffdd-5294-4388-b976-57cb5393d6c9",
+              "leftValue": "={{ $json.task.task_type }}",
+              "rightValue": "ontology_update",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2112,
+        368
+      ],
+      "id": "8fd7b4cd-d9e2-4e69-aca7-ae8be8443dae",
+      "name": "Split Scenarios to Dedicated Agents1"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let raw = $json.output;\n\n// Always return ONE object per item\nif (!raw || typeof raw !== 'string') {\n  return { json: {} };\n}\n\n// Remove ```json fences safely\nraw = raw\n  .replace(/^```json\\s*/i, '')\n  .replace(/^```\\s*/i, '')\n  .replace(/```$/i, '')\n  .trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  return {\n    json: {\n      parse_error: true,\n      raw\n    }\n  };\n}\n\n// Defensive: if array sneaks in, take first element\nif (Array.isArray(parsed)) {\n  parsed = parsed[0];\n}\n\n// Build a meaningful output object\nreturn {\n  json: {\n    results: {\n      evaluation_id: parsed.evaluation_id ?? null,\n      summary: parsed.summary ?? null,\n      findings: parsed.findings ?? [],\n      overall_risk_to_reasoning: parsed.overall_risk_to_reasoning ?? null,\n      confidence_score: parsed.confidence_score ?? null,\n      requires_human_review: parsed.requires_human_review ?? null,\n      raw: raw\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        320
+      ],
+      "id": "9d90953e-c8dc-4075-bd10-a1e2ce390405",
+      "name": "Extract Data for MongoDB Evaluation Collection"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        128,
+        544
+      ],
+      "id": "e0d4235d-674d-4c31-a215-5caebcf61df5",
+      "name": "Google Gemini Feedback & Refinement Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "i3fDPjbZerkYrM6T",
+          "name": "Google Gemini(PaLM) Api Feedback Model"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        320
+      ],
+      "id": "93f432bf-2550-4897-a2b2-5f86bdb4f008",
+      "name": "Loop Over Items4"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "evaluation_results",
+        "fields": "=results",
+        "options": {}
+      },
+      "name": "Insert to Evaluation Results",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        320
+      ],
+      "id": "e5aa0736-06df-4a5b-8b03-c16fecf10b30",
+      "credentials": {
+        "mongoDb": {
+          "id": "jpQLeGrI9qI5y2qC",
+          "name": "MongoDB Feedback & Refinement DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "feedback_results",
+        "fields": "=revision",
+        "options": {}
+      },
+      "name": "Insert to Feedback Results",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        656,
+        336
+      ],
+      "id": "e98b70b6-330c-4e10-8da7-83a7e3e88e83",
+      "credentials": {
+        "mongoDb": {
+          "id": "jpQLeGrI9qI5y2qC",
+          "name": "MongoDB Feedback & Refinement DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let raw = $json.output;\n\n// Always return ONE object per item\nif (!raw || typeof raw !== 'string') {\n  return { json: {} };\n}\n\n// Strip ```json fences\nraw = raw\n  .replace(/^```json\\s*/i, '')\n  .replace(/^```\\s*/i, '')\n  .replace(/```$/i, '')\n  .trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  return {\n    json: {\n      parse_error: true,\n      raw\n    }\n  };\n}\n\n// Defensive: if array appears, take first item\nif (Array.isArray(parsed)) {\n  parsed = parsed[0];\n}\n\n// Map to a clean task object\nreturn {\n  json: {\n    task: {\n      task_id: parsed.task_id ?? null,\n      revision_id: parsed.revision_id ?? null,\n      task_type: parsed.task_type ?? null,\n      change_type: parsed.change_type ?? null,\n      action: parsed.action ?? null,\n      target: parsed.target ?? null,\n      description: parsed.description ?? null,\n      expected_impact: parsed.expected_impact ?? [],\n      execution_status: parsed.execution_status ?? null,\n      sparql_update: parsed.sparql_update ?? null,\n      confidence_score: parsed.confidence_score ?? null,\n      requires_human_confirmation: parsed.requires_human_confirmation ?? null,\n      raw\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        368
+      ],
+      "id": "ccec6684-3658-4d49-a5f0-7136cfb16564",
+      "name": "Extract Data for MongoDB Simulation Collection3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The revisions: {{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Feedback-to-Action Translation Agent (FATA). Your task is to convert each proposed change from a revision into an actionable task suitable for automated execution in an n8n workflow.\n\nInput: JSON object representing a single proposed change:\n{\n  \"change_type\": \"ontology\" | \"mapping\",\n  \"action\": \"add\" | \"modify\" | \"delete\",\n  \"target\": \"<entity or property>\",\n  \"description\": \"<human-readable description of the change>\",\n  \"expected_impact\": [\"<layer1>\", \"<layer2>\", ...]\n}\n\nRequirements:\n1. Output a JSON task with the following fields:\n   - task_id (unique for this change)\n   - revision_id (from the upstream revision)\n   - task_type (\"ontology_update\" for ontology changes, \"mapping_update\" for mapping changes)\n   - change_type, action, target, description, expected_impact\n   - execution_status (\"pending\" by default)\n2. If change_type is \"ontology\", generate a SPARQL INSERT/UPDATE query that implements the change. Include it in the field `sparql_update`.\n3. If change_type is \"mapping\", provide a description of the mapping action in a field called `mapping_instructions`.\n4. Preserve confidence_score and requires_human_confirmation from the input if available.\n5. Ensure the output is valid JSON and each proposed change results in one task.\n\nYour goal: transform evaluation feedback into precise, actionable tasks for automated workflow execution, including queries for ontology changes.",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1584,
+        368
+      ],
+      "id": "6c7eccf9-6651-4eeb-8626-76374e62225d",
+      "name": "Feedback-to-Action Translation Agent",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1632,
+        576
+      ],
+      "id": "d471939d-6317-4da1-af57-97b90fc30b2f",
+      "name": "Google Gemini Feedback to Action Translation Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "qYGxEtmPYpMpnTB6",
+          "name": "Google Gemini(PaLM) Api Feedback to Action Translation Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3ca0efaa-093b-4f86-aeb1-d18d5c8ae5c7",
+              "leftValue": "={{ $json[\"revision.requires_human_confirmation\"] }}",
+              "rightValue": "1",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        352
+      ],
+      "id": "97613e63-8bf5-43d5-a0e8-40bf18e9b624",
+      "name": "Split Scenarios to Dedicated Agents2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1120,
+        336
+      ],
+      "id": "02494048-e94b-4180-9699-3fdd3cd9096e",
+      "name": "For Each Proposed Change"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "revision.proposed_changes",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "revision.requires_human_confirmation, revision.confidence_score, revision.justification, revision.decision",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        912,
+        336
+      ],
+      "id": "3d6aec6d-9f7e-482d-b4d0-b4cf3177eb90",
+      "name": "Split Out Proposed Changes"
+    },
+    {
+      "parameters": {
+        "collection": "feedback_results",
+        "options": {
+          "limit": 2
+        },
+        "query": "{ }"
+      },
+      "name": "Find Feedback Results",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        688,
+        672
+      ],
+      "id": "6c7e1bcf-639a-4354-8ae9-f5d3af200203",
+      "credentials": {
+        "mongoDb": {
+          "id": "jpQLeGrI9qI5y2qC",
+          "name": "MongoDB Feedback & Refinement DB"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "let raw = $json.output;\n\n// Always return ONE object per item\nif (!raw || typeof raw !== 'string') {\n  return { json: {} };\n}\n\n// Strip ```json fences\nraw = raw\n  .replace(/^```json\\s*/i, '')\n  .replace(/^```\\s*/i, '')\n  .replace(/```$/i, '')\n  .trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (e) {\n  return {\n    json: {\n      parse_error: true,\n      raw\n    }\n  };\n}\n\n// Defensive: if array appears, take first item\nif (Array.isArray(parsed)) {\n  parsed = parsed[0];\n}\n\n// Map to a clean task object\nreturn {\n  json: {\n    task: {\n      task_id: parsed.task_id ?? null,\n      revision_id: parsed.revision_id ?? null,\n      task_type: parsed.task_type ?? null,\n      change_type: parsed.change_type ?? null,\n      action: parsed.action ?? null,\n      target: parsed.target ?? null,\n      description: parsed.description ?? null,\n      expected_impact: parsed.expected_impact ?? [],\n      execution_status: parsed.execution_status ?? null,\n      sparql_update: parsed.sparql_update ?? null,\n      confidence_score: parsed.confidence_score ?? null,\n      requires_human_confirmation: parsed.requires_human_confirmation ?? null,\n      raw\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2544,
+        608
+      ],
+      "id": "72b20458-7c6d-486d-ae7a-7ddfe98f1c66",
+      "name": "Extract Data for MongoDB Simulation Collection4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:3030/ontology/update",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/sparql-update",
+        "body": "={{$json.sparqlQuery}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2560,
+        352
+      ],
+      "id": "df84eea3-b0ea-4759-b339-ac3528d5b0e7",
+      "name": "Graph Importer to GraphDB1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Input: array with task object\nconst input = $input.item.json;\n\n// Defensive check\nif (!input.task || !input.task.sparql_update) {\n  return { json: { sparqlQuery: null, error: 'No sparql_update found in task' } };\n}\n\n// 1. Get raw SPARQL\nlet sparql = input.task.sparql_update;\n\n// 2. Remove any ```sparql or ``` fences\nsparql = sparql.replace(/```sparql|```/gi, '').trim();\n\n// 3. Ensure required PREFIX declarations exist\nconst requiredPrefixes = `\nPREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\nPREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\nPREFIX owl: <http://www.w3.org/2002/07/owl#>\nPREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n`;\n\nconst lowerSparql = sparql.toLowerCase();\nif (!lowerSparql.startsWith('prefix')) {\n  sparql = requiredPrefixes.trim() + '\\n\\n' + sparql;\n}\n\n// 4. Escape string literals with full xsd IRIs\nsparql = sparql.replace(\n  /\"([^\"]*?)\"\\^\\^<http:\\/\\/www\\.w3\\.org\\/2001\\/XMLSchema#(string|dateTime|float|boolean|integer)>/g,\n  (_, value, type) => {\n    const escaped = value.replace(/\\\\/g, '\\\\\\\\').replace(/\"/g, '\\\\\"');\n    return `\"${escaped}\"^^xsd:${type}`;\n  }\n);\n\n// 5. Normalize boolean & integer literals if written as strings\nsparql = sparql.replace(/\"true\"\\^\\^xsd:boolean/gi, 'true^^xsd:boolean');\nsparql = sparql.replace(/\"false\"\\^\\^xsd:boolean/gi, 'false^^xsd:boolean');\nsparql = sparql.replace(/\"(\\d+)\"\\^\\^xsd:integer/g, '$1^^xsd:integer');\n\n// Return the cleaned SPARQL\nreturn {\n  json: {\n    sparqlQuery: sparql\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        352
+      ],
+      "id": "59bc23a9-0519-44e7-b435-d2ca504b7029",
+      "name": "Extract Data for GraphDB"
+    },
+    {
+      "parameters": {
+        "message": "=Hello! A proposed change to the ontology has been generated and requires your confirmation.\nChange Summary:\nType: {{ $json[\"revision.proposed_changes\"].change_type }} \nAction: {{ $json[\"revision.proposed_changes\"].action }}\nTarget: {{ $json[\"revision.proposed_changes\"].target }}\nDescription: {{ $json[\"revision.proposed_changes\"].description }}\nExpected Impact: {{ $json[\"revision.proposed_changes\"].expected_impact }}\nJustification: {{ $json[\"revision.justification\"] }}\nConfidence Score: {{ $json[\"revision.confidence_score\"] }}\nDo you approve these changes and want to proceed with the updates? Please reply with YES to approve or NO to reject.",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chat",
+      "typeVersion": 1,
+      "position": [
+        1792,
+        208
+      ],
+      "id": "f9dbb3a9-1322-4253-b54d-925a9f5589a4",
+      "name": "Respond to Chat"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=The revisions: {{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "You are the Feedback-to-Action Translation Agent (FATA). Your task is to convert each proposed change from a revision into an actionable task suitable for automated execution in an n8n workflow.\n\nInput: JSON object representing a single proposed change:\n{\n  \"change_type\": \"ontology\" | \"mapping\",\n  \"action\": \"add\" | \"modify\" | \"delete\",\n  \"target\": \"<entity or property>\",\n  \"description\": \"<human-readable description of the change>\",\n  \"expected_impact\": [\"<layer1>\", \"<layer2>\", ...]\n}\n\nRequirements:\n1. Output a JSON task with the following fields:\n   - task_id (unique for this change)\n   - revision_id (from the upstream revision)\n   - task_type (\"ontology_update\" for ontology changes, \"mapping_update\" for mapping changes)\n   - change_type, action, target, description, expected_impact\n   - execution_status (\"pending\" by default)\n2. If change_type is \"ontology\", generate a SPARQL INSERT/UPDATE query that implements the change. Include it in the field `sparql_update`.\n3. If change_type is \"mapping\", provide a description of the mapping action in a field called `mapping_instructions`.\n4. Preserve confidence_score and requires_human_confirmation from the input if available.\n5. Ensure the output is valid JSON and each proposed change results in one task.\n\nYour goal: transform evaluation feedback into precise, actionable tasks for automated workflow execution, including queries for ontology changes.",
+          "maxIterations": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1488,
+        0
+      ],
+      "id": "bbb4ae5f-40d8-4dfe-86ea-8dca815d3202",
+      "name": "Feedback-to-Action Translation Agent1",
+      "alwaysOutputData": false,
+      "retryOnFail": false,
+      "maxTries": null
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        208
+      ],
+      "id": "5c4c90cc-e69f-4a97-9fe5-82a141baa17b",
+      "name": "Google Gemini Feedback to Action Translation Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "qYGxEtmPYpMpnTB6",
+          "name": "Google Gemini(PaLM) Api Feedback to Action Translation Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3ca0efaa-093b-4f86-aeb1-d18d5c8ae5c7",
+              "leftValue": "={{ $json.task.change_type }}",
+              "rightValue": "ontology",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "a811ffdd-5294-4388-b976-57cb5393d6c9",
+              "leftValue": "={{ $json.task.task_type }}",
+              "rightValue": "ontology_update",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        208
+      ],
+      "id": "283704a3-faf4-42a1-be8e-1808e6e50606",
+      "name": "Split Scenarios to Dedicated Agents3"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        2400,
+        160
+      ],
+      "id": "1daf3505-276a-4a9a-b286-1a9497b7e165",
+      "name": "When chat message received",
+      "webhookId": "b30ea611-d5f9-44a5-9c55-d4f236d69622"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Kafka Trigger": {
+      "main": [
+        [
+          {
+            "node": "Telemetry Collector Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents in MongoDB": {
+      "ai_tool": [
+        [
+          {
+            "node": "Telemetry Collector Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Endpoint Selector3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find documents from enriched_telemetry_raw",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find documents from scenario_simulation_results",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Find Feedback Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        []
+      ]
+    },
+    "Telemetry Collector Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Telemetry Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Telemetry Collector Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Enriched Telemetry DB": {
+      "main": [
+        [
+          {
+            "node": "Ontology & Mapping Authority Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for Graph DB": {
+      "main": [
+        [
+          {
+            "node": "Graph Importer to GraphDB",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert to Telemetry Transformation DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Insert to Enriched Telemetry DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Ontology Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Ontology & Mapping Authority Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Raw Ontology Collection": {
+      "main": [
+        [
+          {
+            "node": "Insert to Raw Ontology DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telemetry Transformation Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for Graph DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Raw Ontology DB": {
+      "main": [
+        [
+          {
+            "node": "Telemetry Transformation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Graph Importer to GraphDB": {
+      "main": [
+        []
+      ]
+    },
+    "Insert to Telemetry Transformation DB": {
+      "main": [
+        [
+          {
+            "node": "(1) Capture Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ontology & Mapping Authority Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB Raw Ontology Collection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(1) Capture Metrics": {
+      "main": [
+        [
+          {
+            "node": "Formatting for Grafana",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting for Grafana": {
+      "main": [
+        [
+          {
+            "node": "Push Grafana Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push Grafana Metrics": {
+      "main": [
+        []
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "(1) Capture Metrics1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Transformation Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Telemetry Transformation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents from raw onotlogy": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(1) Capture Metrics1": {
+      "main": [
+        [
+          {
+            "node": "Formatting for Grafana1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting for Grafana1": {
+      "main": [
+        [
+          {
+            "node": "Push Grafana Metrics2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push Grafana Metrics2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Find documents from raw onotlogy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalisation Agent": {
+      "main": [
+        [
+          {
+            "node": "(1) Capture Metrics (Data Fed.)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Pre-formatting for MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Telemetry DB": {
+      "main": [
+        [
+          {
+            "node": "Publish to Kafka Topic (context-processing-layer-trigger-topic)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telemetry Collector Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-formatting for MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Insert to Telemetry DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local Kafka Trigger": {
+      "main": [
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Normalisation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        []
+      ]
+    },
+    "Fetch Raw Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Loop over API Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Local DB": {
+      "main": [
+        [
+          {
+            "node": "Publish to Kafka Topic (telemetry-local-db-raw)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Normalisation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop over API Data": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Format for MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Endpoint Selector3": {
+      "main": [
+        [
+          {
+            "node": "Fetch Raw Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Insert to Local DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Endpoint Selector1": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger (Mock Data)": {
+      "main": [
+        [
+          {
+            "node": "Endpoint Selector",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Endpoint Selector1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Endpoint Selector2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Endpoint Selector3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to Kafka Topic (telemetry-local-db-raw)": {
+      "main": [
+        [
+          {
+            "node": "Loop over API Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "(1) Capture Metrics (Data Fed.)": {
+      "main": [
+        [
+          {
+            "node": "Formatting for Grafana (Data Fed.)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatting for Grafana (Data Fed.)": {
+      "main": [
+        [
+          {
+            "node": "Push Grafana Metrics (Data Fed.)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push Grafana Metrics (Data Fed.)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to Kafka Topic (context-processing-layer-trigger-topic)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Scenario Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for Graph DB1": {
+      "main": [
+        []
+      ]
+    },
+    "Get Privacy Risk Taxonomy": {
+      "main": [
+        [
+          {
+            "node": "Transforming JSON-LD to nodes & edges (2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transforming JSON-LD to nodes & edges (1)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Transforming JSON-LD to nodes & edges (2)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Get Context": {
+      "main": [
+        [
+          {
+            "node": "Transforming JSON-LD to nodes & edges (1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Scenario Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Scenario Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Simulation Model 2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Simulation Agent 2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Simulation Model 1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Simulation Agent 1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Inference Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Inference Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scenario Agent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Simulation Collection": {
+      "main": [
+        [
+          {
+            "node": "Insert to Scenarios DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Scenarios DB": {
+      "main": [
+        [
+          {
+            "node": "Simulation Orchestrator Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulation Orchestrator Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for Simulation Agents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulation Agent 1": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB Simulation Results (1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents from enriched_telemetry_raw": {
+      "main": [
+        [
+          {
+            "node": "Get Context",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Privacy Risk Taxonomy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Scenarios to Dedicated Agents": {
+      "main": [
+        [
+          {
+            "node": "Simulation Agent 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Simulation Agent 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Simulation Orchestration Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Simulation Orchestrator Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simulation Agent 2": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB Simulation Results (2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Scenario Simulation Results DB (1)": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Scenario Simulation Results DB (2)": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Simulation Results (1)": {
+      "main": [
+        [
+          {
+            "node": "Insert to Scenario Simulation Results DB (1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Simulation Results (2)": {
+      "main": [
+        [
+          {
+            "node": "Insert to Scenario Simulation Results DB (2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Inference Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for Simulation Agents": {
+      "main": [
+        [
+          {
+            "node": "Insert to Orchestration Agent Scenarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Orchestration Agent Scenarios": {
+      "main": [
+        [
+          {
+            "node": "Split Scenarios to Dedicated Agents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items3": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Extract Data for MongoDB Simulation Collection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Inference Agent": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extract Data for MongoDB Inference Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Inference Results": {
+      "main": [
+        [
+          {
+            "node": "Insert to Risk Inference Results DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Evaluation Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Evaluation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find documents from scenario_simulation_results": {
+      "main": [
+        [
+          {
+            "node": "Evaluation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluation Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB Evaluation Collection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Simulation Collection2": {
+      "main": [
+        [
+          {
+            "node": "Insert to Feedback Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Feedback & Revising Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB Simulation Collection2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Evaluation Collection": {
+      "main": [
+        [
+          {
+            "node": "Insert to Evaluation Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Feedback & Refinement Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feedback & Revising Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items4": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Feedback & Revising Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Evaluation Results": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Feedback Results": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Scenarios to Dedicated Agents1": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for GraphDB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Feedback-to-Action Translation Agent": {
+      "main": [
+        [
+          {
+            "node": "Extract Data for MongoDB Simulation Collection3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Feedback to Action Translation Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feedback-to-Action Translation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "For Each Proposed Change": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Split Scenarios to Dedicated Agents2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out Proposed Changes": {
+      "main": [
+        [
+          {
+            "node": "For Each Proposed Change",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Feedback Results": {
+      "main": [
+        [
+          {
+            "node": "Split Out Proposed Changes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for MongoDB Simulation Collection3": {
+      "main": [
+        [
+          {
+            "node": "Split Scenarios to Dedicated Agents1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Scenarios to Dedicated Agents2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Chat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Feedback-to-Action Translation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data for GraphDB": {
+      "main": [
+        [
+          {
+            "node": "Graph Importer to GraphDB1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Feedback to Action Translation Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Feedback-to-Action Translation Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Chat": {
+      "main": [
+        [
+          {
+            "node": "Split Scenarios to Dedicated Agents3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Scenarios to Dedicated Agents3": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "657d3ad6-04f0-4743-a7cd-165dc8942cef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f32d5822a2849cb195e1ab5306933bfaefd5e72c87d29738a06685603d71a039"
+  },
+  "id": "uQXWIzN6ZdIYebct",
+  "tags": []
+}

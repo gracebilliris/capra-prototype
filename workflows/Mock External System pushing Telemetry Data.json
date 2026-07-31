@@ -1,0 +1,351 @@
+{
+  "name": "Mock External System pushing Telemetry Data",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "responseFormat": "string",
+        "options": {}
+      },
+      "name": "Fetch Raw Telemetry",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        416,
+        1008
+      ],
+      "id": "8cc27ca2-165d-49b9-8e9b-cf119684b0bf",
+      "executeOnce": false,
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "local_raw",
+        "fields": "={{ Object.keys($json).join(',') }}",
+        "options": {}
+      },
+      "name": "Insert to Local DB",
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        960
+      ],
+      "id": "1945fa5e-c0a6-43b5-8c8a-32c43d7629e3",
+      "credentials": {
+        "mongoDb": {
+          "id": "7fXMn7Hil5ZoBmRu",
+          "name": "local_db MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        624,
+        944
+      ],
+      "id": "6403c3a3-548d-41b8-abd4-ee6e59d6600a",
+      "name": "Loop over API Data"
+    },
+    {
+      "parameters": {
+        "topic": "telemetry-local-db-raw",
+        "sendInputData": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "name": "Publish to Kafka Topic",
+      "type": "n8n-nodes-base.kafka",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        960
+      ],
+      "id": "0e69a4ff-c2f1-4e65-85ee-577cfe38b050",
+      "credentials": {
+        "kafka": {
+          "id": "pMESfGI2nLXUGP4c",
+          "name": "Local Kafka Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoints = [\n  \"https://mp67deccbcfea4b8e3df.free.beeceptor.com/api/traces\",\n \"https://mp67deccbcfea4b8e3df.free.beeceptor.com/api/event_logs\"\n];\nreturn endpoints.map(url => ({ json: { url } }));"
+      },
+      "name": "Endpoint Selector",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        1200
+      ],
+      "id": "7cbf50f0-2458-436f-ac0d-3356020728af"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        1392
+      ],
+      "id": "7f4efc3e-2f10-47f6-9d7e-d61a0e654ca5",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 95
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        1008
+      ],
+      "id": "94f944e9-83fb-4b62-a37b-b137f3f95794",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoints = [\n  \n\"https://mp68e33da218da805f9c.free.beeceptor.com/api/traces\",\n  \"https://mp68e33da218da805f9c.free.beeceptor.com/api/event_logs\"\n];\n\nreturn endpoints.map(url => ({ json: { url } }));"
+      },
+      "name": "Endpoint Selector1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        912
+      ],
+      "id": "fea84920-2c81-4cf8-80fd-4a29ab19cf5a"
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoints = [\n  \"https://telemetry-data.free.beeceptor.com/api/traces\",    \"https://telemetry-data.free.beeceptor.com/api/event_logs\"\n];\nreturn endpoints.map(url => ({ json: { url } }));"
+      },
+      "name": "Endpoint Selector2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        1392
+      ],
+      "id": "81d69118-4d38-45ac-8b88-23524ca0eb90"
+    },
+    {
+      "parameters": {
+        "jsCode": "const endpoints = [\n\"https://tele-data.free.beeceptor.com/api/event_logs\", \"https://tele-data.free.beeceptor.com/api/traces\"];\n\nreturn endpoints.map(url => ({ json: { url } }));"
+      },
+      "name": "Endpoint Selector3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        1616
+      ],
+      "id": "9f4e08e4-e02c-442b-93aa-bf4f3dff10fa"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// n8n Code Node — Run Once for Each Item\nconst item = $input.item.json;\n\n// --- 1. Base document with canonical fields ---\nconst doc = {\n  ingestTimestamp: item.ingestTimestamp ?? Date.now(),\n  raw: item.data ?? item.raw ?? item,\n  parseError: item.parseError ?? false,\n  errorMessage: item.errorMessage ?? null,\n\n  // canonical fields\n  span_id: null,\n  parent_span_id: null,\n  agent_id: null,\n  operation: null,\n  target_agent_id: null,\n  start_time: null,\n  end_time: null,\n  status: null,\n};\n\n// --- 2. Extract payload safely ---\nlet extracted = {};\nif (typeof doc.raw === 'string') {\n  try {\n    extracted = JSON.parse(doc.raw);\n  } catch (err) {\n    doc.parseError = true;\n    doc.errorMessage = `JSON.parse failed: ${err.message}`;\n  }\n} else if (typeof doc.raw === 'object' && doc.raw !== null) {\n  extracted = doc.raw;\n}\n\n// --- 3. Canonical field mapping ---\ndoc.span_id         = extracted.span_id ?? null;\ndoc.parent_span_id  = extracted.parent_span_id ?? null;\ndoc.agent_id        = extracted.agent_id ?? extracted.source_agent ?? null;\ndoc.operation       = extracted.operation ?? extracted.action ?? null;\ndoc.target_agent_id = extracted.target_agent_id ?? extracted.target_agent ?? null;\ndoc.start_time      = extracted.start_time ?? extracted.timestamp ?? null;\ndoc.end_time        = extracted.end_time ?? extracted.timestamp ?? null;\ndoc.status          = extracted.status ?? extracted.event_type ?? null;\n\n// --- 4. Promote extra fields to top-level ---\nconst canonicalFields = new Set([\n  'span_id', 'parent_span_id', 'agent_id', 'operation', \n  'target_agent_id', 'start_time', 'end_time', 'status'\n]);\n\nfor (const [key, value] of Object.entries(extracted)) {\n  if (!canonicalFields.has(key)) {\n    doc[key] = value;\n  }\n}\n\n// --- 5. Return normalized document ---\nreturn { json: doc };\n``"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        720
+      ],
+      "id": "2cd8d41f-a93d-4948-a0f7-1cb02ff97764",
+      "name": "Format For MongoDB2"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // Flatten the data object\n  if(item.json.data){\n    return { json: { ...item.json.data } };\n  }\n  return item;\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        960
+      ],
+      "id": "8e6401b1-6083-4ab0-9624-7682c39f4d5f",
+      "name": "Format for MongoDB",
+      "notes": "Unwrap telemetry event object"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// n8n Code Node — Run Once for Each Item\nconst item = $input.item.json;\n\n// Base document with constants\nconst doc = {\n  ingestTimestamp: item.ingestTimestamp ?? Date.now(),\n  raw: item.raw ?? item,\n  parseError: item.parseError ?? false,\n  errorMessage: item.errorMessage ?? null,\n\n  // canonical fields\n  span_id: null,\n  parent_span_id: null,\n  agent_id: null,\n  operation: null,\n  target_agent_id: null,\n  start_time: null,\n  end_time: null,\n  status: null,\n};\n\n// Extract payload (parse string if necessary)\nlet extracted = {};\nif (typeof doc.raw === 'string') {\n  try {\n    extracted = JSON.parse(doc.raw);\n  } catch (err) {\n    doc.parseError = true;\n    doc.errorMessage = `JSON.parse failed: ${err.message}`;\n  }\n} else if (typeof doc.raw === 'object' && doc.raw !== null) {\n  extracted = doc.raw;\n}\n\n// Mapping: populate canonical fields from payload\ndoc.span_id         = extracted.span_id ?? null;\ndoc.parent_span_id  = extracted.parent_span_id ?? null;\ndoc.agent_id        = extracted.agent_id ?? extracted.source_agent ?? null;\ndoc.operation       = extracted.operation ?? extracted.action ?? null;\ndoc.target_agent_id = extracted.target_agent_id ?? extracted.target_agent ?? null;\ndoc.start_time      = extracted.start_time ?? null;\ndoc.end_time        = extracted.end_time ?? null;\ndoc.status          = extracted.status ?? extracted.event_type ?? null;\n\n// Return normalized document\nreturn { json: doc };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        736
+      ],
+      "id": "269809a0-5c20-412a-9ad5-a8b2fb38ae1c",
+      "name": "Format for Kafka Topic"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Fetch Raw Telemetry": {
+      "main": [
+        [
+          {
+            "node": "Loop over API Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Local DB": {
+      "main": [
+        [
+          {
+            "node": "Publish to Kafka Topic",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop over API Data": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Format for MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to Kafka Topic": {
+      "main": [
+        [
+          {
+            "node": "Loop over API Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Endpoint Selector": {
+      "main": [
+        []
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Endpoint Selector",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Endpoint Selector1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Endpoint Selector2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Endpoint Selector3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Endpoint Selector",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Endpoint Selector1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Endpoint Selector2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Endpoint Selector1": {
+      "main": [
+        []
+      ]
+    },
+    "Endpoint Selector2": {
+      "main": [
+        []
+      ]
+    },
+    "Endpoint Selector3": {
+      "main": [
+        [
+          {
+            "node": "Fetch Raw Telemetry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Insert to Local DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format for Kafka Topic": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6a2de20a-4200-4a77-9432-0e8a94694220",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "f32d5822a2849cb195e1ab5306933bfaefd5e72c87d29738a06685603d71a039"
+  },
+  "id": "XB3VrCZoKwMMNNwI",
+  "tags": []
+}

@@ -1,0 +1,184 @@
+:root {
+  --uts-blue: #003a6c;
+  --uts-blue-dark: #002748;
+  --uts-orange: #e56a00;
+  --ink: #1a1a1a;
+  --muted: #5a6373;
+  --paper: #ffffff;
+  --tint: #f4f6fa;
+  --line: #d9dee7;
+  --radius: 10px;
+  --maxw: 960px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.55;
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, var(--uts-blue) 0%, var(--uts-blue-dark) 100%);
+  color: #fff;
+  padding: 72px 0 88px;
+}
+.hero .eyebrow {
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(255,255,255,0.8);
+  margin: 0 0 12px;
+}
+.hero h1 {
+  font-size: 72px;
+  line-height: 1;
+  margin: 0 0 8px;
+  letter-spacing: -0.02em;
+}
+.hero .tag {
+  font-size: 24px;
+  font-weight: 500;
+  margin: 0 0 20px;
+  color: #fff;
+}
+.hero .lede {
+  font-size: 18px;
+  max-width: 680px;
+  color: rgba(255,255,255,0.9);
+  margin: 0 0 28px;
+}
+.cta { margin: 0; }
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  text-decoration: none;
+  margin-right: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  font-weight: 500;
+}
+.btn:hover { background: rgba(255,255,255,0.2); }
+.btn.primary { background: var(--uts-orange); border-color: var(--uts-orange); }
+.btn.primary:hover { background: #c95d00; }
+
+/* Main sections */
+main { padding: 56px 0 40px; }
+section { margin: 0 0 56px; }
+section h2 {
+  font-size: 28px;
+  margin: 0 0 16px;
+  color: var(--uts-blue);
+  letter-spacing: -0.01em;
+}
+section p { font-size: 17px; color: var(--ink); margin: 0 0 12px; }
+section p strong { color: var(--uts-blue-dark); }
+
+/* Layers */
+.layers {
+  display: grid;
+  gap: 12px;
+  margin: 24px 0 12px;
+}
+.layer {
+  background: var(--tint);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--uts-orange);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: grid;
+  grid-template-columns: 88px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.layer .badge {
+  display: inline-block;
+  background: var(--uts-blue);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+.layer h3 { margin: 0 0 6px; font-size: 18px; color: var(--uts-blue-dark); }
+.layer p { margin: 0; color: var(--muted); font-size: 15px; }
+.flow-note {
+  text-align: center;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 16px;
+}
+
+/* Videos */
+.videos {
+  padding-left: 20px;
+  color: var(--ink);
+}
+.videos li { margin: 0 0 10px; font-size: 16px; }
+.videos em { color: var(--muted); font-style: italic; }
+.hint { color: var(--muted); font-size: 14px; }
+.hint code { background: var(--tint); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+
+/* Specs list */
+.specs {
+  padding: 0;
+  margin: 12px 0 16px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 24px;
+}
+.specs li {
+  padding: 8px 12px;
+  background: var(--tint);
+  border-radius: 6px;
+  font-size: 15px;
+}
+.specs li strong { color: var(--uts-blue-dark); }
+
+/* Links */
+a { color: var(--uts-orange); }
+a:hover { color: #c95d00; }
+code {
+  font-family: "SF Mono", Menlo, Consolas, monospace;
+  background: var(--tint);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.92em;
+}
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--line);
+  padding: 24px 0;
+  color: var(--muted);
+  font-size: 14px;
+  background: var(--tint);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .hero { padding: 48px 0 56px; }
+  .hero h1 { font-size: 52px; }
+  .hero .tag { font-size: 20px; }
+  .layer { grid-template-columns: 1fr; }
+  .specs { grid-template-columns: 1fr; }
+  .btn { margin-bottom: 8px; }
+}
