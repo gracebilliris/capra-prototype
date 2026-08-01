@@ -38,6 +38,7 @@ credentials*.json
 database.sqlite
 database.sqlite-*
 docs/*.pdf
+docs/slides/
 fuseki-data/
 media/
 n8n_data/
