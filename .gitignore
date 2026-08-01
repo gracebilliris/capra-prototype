@@ -1,59 +1,53 @@
-# macOS
-.DS_Store
+
+__pycache__/
+_local/
+_scratch/
 ._*
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Environment / secrets
+.DS_Store
 .env
 .env.*
-*.env
 .grafana_env
-credentials*.json
-secrets/
-*token*.txt
-*cred*.txt
-
-# n8n runtime
+.idea/
+.mypy_cache/
 .n8n/
-database.sqlite
-database.sqlite-*
-n8n_data/
+.pytest_cache/
+.python-version
+.venv/
+.vscode/
+*.env
+*.log
+*.pyc
 *.sqlite
 *.sqlite-shm
 *.sqlite-wal
-
-# Local caches / installs
-node_modules/
-__pycache__/
-*.pyc
-.python-version
-.venv/
-venv/
-.mypy_cache/
-.pytest_cache/
-
-# Local scratch
+*.swo
+*.swp
+*cred*.txt
+*token*.txt
 /tmp/
-scratch/
-_scratch/
-*.log
-
 # Docker volumes
-volumes/
-fuseki-data/
-
-# Session state / large temp evidence dumps (keep only screenshots + reports)
-test_artefacts/evidence/
-test_artefacts/snapshots/
-test_artefacts/recordings/
-test_artefacts/grafana_screenshots/
-
+# Editors
+# Environment / secrets
+# Local caches / installs
+# Local scratch
 # Local-only working materials (video scripts, unpublished drafts, private notes)
+# macOS
+# n8n runtime
+# Session state / large temp evidence dumps (keep only screenshots + reports)
+credentials*.json
+database.sqlite
+database.sqlite-*
+docs/*.pdf
+fuseki-data/
 media/
+n8n_data/
+node_modules/
 notes/
-_local/
+scratch/
+secrets/
+test_artefacts/evidence/
+test_artefacts/grafana_screenshots/
+test_artefacts/recordings/
+test_artefacts/snapshots/
+venv/
+volumes/

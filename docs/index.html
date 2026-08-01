@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAPRA — Context-Aware Privacy Risk Assessment</title>
+<style>
+  :root{
+    --paper:#ffffff; --ink:#0a1628; --slate:#4a5c74; --muted:#9aa5b4;
+    --line:#e1e5eb; --soft:#f1f4f8; --shadow:#d5dce4;
+    --navy:#0a2540; --midblue:#3b6fa8; --sky:#7ba7d9; --accent:#1b3a5e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink); background:var(--paper); line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--midblue); text-decoration:none}
+  a:hover{color:var(--navy); text-decoration:underline}
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px}
+
+  header.hero{
+    background:linear-gradient(180deg,var(--navy) 0%, var(--accent) 100%);
+    color:var(--paper); padding:72px 0 56px; margin-bottom:32px;
+  }
+  header.hero .wrap{display:flex; flex-direction:column; gap:12px}
+  header.hero .eyebrow{
+    text-transform:uppercase; letter-spacing:.18em; font-size:12px;
+    color:var(--sky); font-weight:600;
+  }
+  header.hero h1{
+    margin:0; font-size:44px; line-height:1.15; letter-spacing:-.01em;
+    font-weight:700;
+  }
+  header.hero p.lede{
+    margin:8px 0 0; font-size:18px; color:#cfd9e6; max-width:640px;
+  }
+
+  section{padding:32px 0}
+  section h2{
+    font-size:14px; letter-spacing:.15em; text-transform:uppercase;
+    color:var(--slate); margin:0 0 20px; font-weight:700;
+  }
+
+  .card{
+    border:1px solid var(--line); border-radius:12px; background:var(--paper);
+    box-shadow:0 1px 2px var(--shadow); padding:24px; margin-bottom:16px;
+    display:grid; grid-template-columns:44px 1fr; gap:20px;
+  }
+  .card .num{
+    width:36px; height:36px; border-radius:50%;
+    background:var(--navy); color:var(--paper);
+    display:grid; place-items:center; font-weight:700; font-size:15px;
+  }
+  .card .body h3{
+    margin:2px 0 4px; font-size:20px; color:var(--ink);
+  }
+  .card .body p{margin:0 0 12px; color:var(--slate)}
+  .card .cta{
+    display:inline-block; padding:9px 16px; border-radius:8px;
+    background:var(--navy); color:var(--paper); font-weight:600;
+    font-size:14px;
+  }
+  .card .cta:hover{background:var(--accent); text-decoration:none}
+  .card .cta.secondary{
+    background:transparent; color:var(--navy); border:1px solid var(--navy);
+    margin-left:8px;
+  }
+  .card .cta.secondary:hover{background:var(--soft)}
+  .card .pending{
+    font-size:12px; color:var(--muted); font-style:italic; margin-left:8px;
+  }
+
+  .video-embed{
+    position:relative; padding-top:56.25%; border-radius:10px;
+    background:var(--soft); border:1px solid var(--line); margin-top:14px;
+    overflow:hidden;
+  }
+  .video-embed iframe, .video-embed .placeholder{
+    position:absolute; inset:0; width:100%; height:100%; border:0;
+  }
+  .video-embed .placeholder{
+    display:grid; place-items:center; color:var(--muted);
+    font-size:14px; text-align:center; padding:24px;
+  }
+
+  .diagram{
+    border:1px solid var(--line); border-radius:12px; padding:20px;
+    background:var(--paper); margin-top:12px;
+  }
+  .diagram img{max-width:100%; display:block; margin:0 auto; border-radius:6px}
+  .diagram .caption{color:var(--muted); font-size:13px; margin-top:10px; text-align:center}
+
+  .stack{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px}
+  .layer{
+    border:1px solid var(--line); border-left:4px solid var(--navy);
+    border-radius:8px; padding:14px 16px; background:var(--paper);
+  }
+  .layer.human{border-left-color:var(--accent)}
+  .layer .k{font-weight:700; color:var(--navy); font-size:14px; margin-bottom:2px}
+  .layer .n{font-size:15px; color:var(--ink); margin-bottom:4px}
+  .layer .d{font-size:13px; color:var(--slate)}
+
+  footer{
+    color:var(--muted); font-size:13px; padding:32px 0 48px;
+    border-top:1px solid var(--line); margin-top:32px; text-align:center;
+  }
+
+  @media (max-width:640px){
+    header.hero h1{font-size:32px}
+    .stack{grid-template-columns:1fr}
+    .card{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">PhD prototype showcase</div>
+    <h1>CAPRA</h1>
+    <p class="lede">A Context-Aware Privacy Risk Assessment framework that turns live system telemetry into calibrated privacy-risk scores, with a human reviewer in the loop and a learning feedback path.</p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section>
+    <h2>Three-part showcase</h2>
+
+    <!-- 1. Research outline -->
+    <article class="card">
+      <div class="num">1</div>
+      <div class="body">
+        <h3>Research project outline</h3>
+        <p>The research question, gap, and contributions in seven slides — under two minutes.</p>
+        <div class="video-embed">
+          <!-- Once uploaded, replace this placeholder with the YouTube unlisted embed:
+               <iframe src="https://www.youtube.com/embed/VIDEO_ID?rel=0" allowfullscreen></iframe> -->
+          <div class="placeholder">Video coming soon · will embed here</div>
+        </div>
+        <div style="margin-top:14px">
+          <a class="cta" href="./slides/01_research_outline.pptx">Download outline (.pptx)</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 2. Framework description -->
+    <article class="card">
+      <div class="num">2</div>
+      <div class="body">
+        <h3>Framework description</h3>
+        <p>The six layers of CAPRA, one at a time, culminating in a sped-up end-to-end animation.</p>
+        <div class="video-embed">
+          <div class="placeholder">Video coming soon · will embed here</div>
+        </div>
+        <div style="margin-top:14px">
+          <a class="cta" href="./slides/02_framework_description.pptx">Download deck (.pptx)</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 3. Prototype repository -->
+    <article class="card">
+      <div class="num">3</div>
+      <div class="body">
+        <h3>Prototype repository</h3>
+        <p>The full CAPRA prototype — n8n workflows, domain models for healthcare, retail, and student admission, dashboards, and reproducible test artefacts. Clone it and run the same three-domain evaluation locally.</p>
+        <div style="margin-top:14px">
+          <a class="cta" href="https://github.com/gracebilliris/capra-prototype">Open on GitHub →</a>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section>
+    <h2>The framework at a glance</h2>
+    <div class="stack">
+      <div class="layer"><div class="k">1 · DFL</div><div class="n">Data Federation Layer</div><div class="d">Normalises heterogeneous telemetry into a common event record.</div></div>
+      <div class="layer"><div class="k">3 · CPL</div><div class="n">Context Processing Layer</div><div class="d">Enriches events with contextual metadata from the domain model.</div></div>
+      <div class="layer"><div class="k">2 · CL</div><div class="n">Context Layer</div><div class="d">Central knowledge store; the interaction hub for all other layers.</div></div>
+      <div class="layer"><div class="k">4 · RIL</div><div class="n">Risk Intelligence Layer</div><div class="d">Assigns a severity score from the enriched context.</div></div>
+      <div class="layer"><div class="k">5 · FRL</div><div class="n">Feedback &amp; Refinement Layer</div><div class="d">Learns from assessment outcomes and reviewer decisions.</div></div>
+      <div class="layer human"><div class="k">6 · HIL</div><div class="n">Human Interaction Layer</div><div class="d">Presents cases to a human reviewer and captures their evaluation.</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Domains evaluated</h2>
+    <p style="color:var(--slate)">CAPRA has been evaluated in three domains sharing the same six-layer architecture; only the domain model in the Context Layer changes.</p>
+    <div class="stack">
+      <div class="layer"><div class="k">Healthcare</div><div class="d">Clinicians, records, treatment vs. curiosity — special-category health data.</div></div>
+      <div class="layer"><div class="k">Retail</div><div class="d">Customer profiles, loyalty accounts, third-party sharing risk.</div></div>
+      <div class="layer"><div class="k">Student admission</div><div class="d">Applications, transcripts, personal statements, reviewer workflows.</div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Anonymous submission · no personal or institutional identifiers on this page ·
+  video and repository links are shared unlisted / privately for review.
+</footer>
+
+</body>
+</html>
