@@ -1,8 +1,10 @@
 # CAPRA Prototype
 
-**Context-Aware Privacy Risk Assessment (CAPRA)** — an n8n-based prototype of the five-layer reference architecture proposed in Grace Billiris's PhD Candidature Assessments 2 & 3.
+**Context-Aware Privacy Risk Assessment (CAPRA)** — an n8n-based prototype of the six-layer reference architecture proposed in Grace Billiris's PhD Candidature Assessments 2 & 3.
 
-CAPRA processes multi-agent telemetry through five layers — **DFL** (Data Federation), **CPL** (Context Processing), **RIL** (Risk Intelligence), **E&RL** (Evaluation & Refinement), **HIL** (Human Interaction) — to surface data-privacy risks in agentic AI systems that handle personally identifiable information (PII).
+CAPRA processes multi-agent telemetry through six layers — **DFL** (Data Federation), **CPL** (Context Processing), **CL** (Context Layer, the shared knowledge substrate), **RIL** (Risk Intelligence), **FRL** (Feedback & Refinement), **HIL** (Human Interaction) — to surface data-privacy risks in agentic AI systems that handle personally identifiable information (PII).
+
+> In the current prototype build, CL is materialised by the Apache Jena Fuseki ontology store that CPL reads and writes against, and FRL is the refinement portion of the Evaluation & Refinement Layer. Dashboard UIDs and Loki job names below therefore still carry the earlier prototype naming (`evalmain`, `evaluation_and_refinement_layer`).
 
 > ⚠️ **Research prototype.** Intended for reviewers reproducing the PhD evidence. Not production hardened.
 
@@ -26,10 +28,10 @@ CAPRA processes multi-agent telemetry through five layers — **DFL** (Data Fede
 
 | Path | Contents |
 |---|---|
-| `workflows/` | n8n workflow JSON exports. **Import `CAPRA_Prototype_unified_patched.json` first** — it contains the full five-layer pipeline used for the Beta evidence. The per-layer JSONs (`Data Federation Layer.json`, `Context Processing Layer.json`, `Mock External System pushing Telemetry Data.json`, `2026.02.02 (WIP) Risk Intelligence Layer OG.json`) are earlier per-layer exports kept for lineage. |
+| `workflows/` | n8n workflow JSON exports. **Import `CAPRA_Prototype_unified_patched.json` first** — it contains the full six-layer pipeline used for the Beta evidence. The per-layer JSONs (`Data Federation Layer.json`, `Context Processing Layer.json`, `Mock External System pushing Telemetry Data.json`, `2026.02.02 (WIP) Risk Intelligence Layer OG.json`) are earlier per-layer exports kept for lineage. |
 | `n8n_snippets/` | Code-node snippets used inside the workflow. `RIL_Formatting_for_Grafana_patched.js` is the deterministic severity-mapping formatter; `Extract_Data_for_Graph_DB_patched.js` is the hardened SPARQL sanitiser; `format_risk_for_grafana.js` is the earlier revision retained for lineage. |
 | `dashboards/` | Grafana dashboard JSON (`risk_register.json` — CAPRA — Risk Dashboard, uid `capra-risk-register`) plus `install_risk_register_dashboard.js`, a browser-console installer used when a service-account token is not available. |
-| `dashboard_screenshots/` | PNGs captured for each of the five layers plus the aggregate view (Beta final state, 15 Jun 2026) and the Risk Dashboard (26 Jul 2026). Sources for Figures 5.1–5.7 in the CA3 report. |
+| `dashboard_screenshots/` | PNGs captured for each of the prototype layers plus the aggregate view (Beta final state, 15 Jun 2026) and the Risk Dashboard (26 Jul 2026). Sources for Figures 5.1–5.7 in the CA3 report. |
 | `test_artefacts/` | Test plan (`01`), populated DSRM evaluation (`02`), evidence helpers (`03`, `04`, `05`, `06`), test-run findings log (`07`), comparative analysis (`08`), results write-up (`09`), Grafana fixes (`10`, `11`, `12`), per-layer reports (`13`–`17`), all-layers report (`18`), DSRM evaluation report (`19`), reproduction guide (`20`), CA3 §5.2 snippet (`21`), results matrix, recording instructions. |
 | `docs/` | Supplementary docs (this file plus `docs/SETUP.md` for the long-form setup). |
 
@@ -45,20 +47,31 @@ CAPRA processes multi-agent telemetry through five layers — **DFL** (Data Fede
     [DFL] Data Federation Layer  ──►  MongoDB (telemetry_raw)
         │
     [CPL] Context Processing Layer  ──►  MongoDB (enriched_telemetry_raw)
-        │                             ──►  Apache Jena Fuseki (ontology / SPARQL)
-        │
+        │                             ──►  [CL] Apache Jena Fuseki (ontology / SPARQL)
+        │                                     ▲   │
+        │                                     │   ▼  (context read by upper layers)
     [RIL] Risk Intelligence Layer  (5 agents: Scenario, Orchestrator, Sim1, Sim2, Inference)
         │                             ──►  MongoDB (risk_inference)
         │                             ──►  Grafana Loki (job=risk_intelligence_layer)
         │
-    [E&RL] Evaluation & Refinement Layer
+    [FRL] Feedback & Refinement Layer  (implemented within the Evaluation & Refinement Layer)
         │                             ──►  MongoDB (evaluation_results)
         │                             ──►  Grafana Loki (job=evaluation_and_refinement_layer)
+        │                             ──►  [CL] refinements written back to the ontology store
         │
-    [HIL] Human Interaction Layer  (two-stage n8n form)  ──►  reviewer
+    [HIL] Human Interaction Layer  (two-stage n8n form)  ──►  reviewer  ──►  FRL
 
-  Observability: Grafana Cloud — six per-layer dashboards + CAPRA — Risk Dashboard.
+  Observability: Grafana Cloud — per-layer dashboards + CAPRA — Risk Dashboard.
 ```
+
+**Layer roles in one line each**
+
+- **DFL** — normalises multi-source telemetry into a canonical event schema.
+- **CPL** — enriches each event with contextual metadata read from CL.
+- **CL** — the shared knowledge substrate (actors, resources, purposes, history); every other layer transacts through it, which also makes each assessment auditable.
+- **RIL** — five-agent risk reasoning that scores each enriched event.
+- **FRL** — detects systematic patterns in assessments and reviewer decisions, and writes targeted refinements back to CL.
+- **HIL** — the sole channel for reviewer confirmation, correction, and annotation.
 
 ---
 
@@ -115,7 +128,7 @@ Total elapsed time on a fresh laptop: **~45–60 minutes** including provisionin
 For the CA3 report evidence exactly (Figures 5.1–5.7, Table 5.2), follow **`test_artefacts/20_Reproduction_Guide.md`**. It covers:
 
 - Boot order (Fuseki → Mongo → n8n → dashboards)
-- The three "always-success" metric-emitter fixes (CPL, HIL, E&RL) — §6
+- The three "always-success" metric-emitter fixes (CPL, HIL, FRL) — §6
 - Rendering dashboards to PNG server-side (no browser needed) — §5.3, including the `capra-risk-register` render command
 - Per-layer verification queries — §5.2
 - Recovery procedures for the four documented infrastructure incidents — §4
@@ -131,7 +144,7 @@ The per-layer test reports (`test_artefacts/13`–`17`) each contain their own r
 | `dflmain` | `data-federation-layer` | DFL health | Fig 5.1 |
 | `cplmain` | `context-processing-layer` | CPL health | Fig 5.2 |
 | `grpt7hn` | `risk-intelligence-layer` | RIL health | Fig 5.3 |
-| `evalmain` | `evaluation-layer` | E&RL health | Fig 5.4 |
+| `evalmain` | `evaluation-layer` | FRL health (Evaluation & Refinement) | Fig 5.4 |
 | `hilmain` | `human-interaction-layer` | HIL health | Fig 5.5 |
 | `alllayers` | `all-layers-e28094-overview` | Combined | Fig 5.6 |
 | `capra-risk-register` | `capra-e28094-risk-dashboard` | Substantive risk output (severity, explanation, risk name) | **Fig 5.7** |
@@ -159,7 +172,7 @@ More detailed diagnostics in `test_artefacts/07_Test_Run_Findings.md`.
 | Iteration | Status | Reference |
 |---|---|---|
 | Alpha | Demonstrated end-to-end across three illustrative scenarios | `test_artefacts/13`–`17_Layer_Report_*.md` |
-| Beta  | All five layers ≥ 95% per-layer reliability (combined 98.53%); substantive risk output surfaced in Risk Dashboard (30% CRIT / 49% HIGH / 15% MED / 6% LOW over the reference window) | `test_artefacts/18_AllLayers_Combined_Report.md`, `test_artefacts/07_Test_Run_Findings.md §20` |
+| Beta  | All prototype layers ≥ 95% per-layer reliability (combined 98.53%); substantive risk output surfaced in Risk Dashboard (30% CRIT / 49% HIGH / 15% MED / 6% LOW over the reference window) | `test_artefacts/18_AllLayers_Combined_Report.md`, `test_artefacts/07_Test_Run_Findings.md §20` |
 | Gamma | Pending; will incorporate industry field survey results | — |
 
 ---
