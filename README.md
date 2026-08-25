@@ -20,7 +20,9 @@ CAPRA processes multi-agent telemetry through six layers — **DFL** (Data Feder
 6. [Grafana dashboards](#grafana-dashboards)
 7. [Troubleshooting](#troubleshooting)
 8. [Iteration status](#iteration-status)
-9. [Citation and licence](#citation-and-licence)
+9. [Related publications](#related-publications)
+10. [Release and DOI](#release-and-doi)
+11. [Citation and licence](#citation-and-licence)
 
 ---
 
@@ -173,7 +175,59 @@ More detailed diagnostics in `test_artefacts/07_Test_Run_Findings.md`.
 |---|---|---|
 | Alpha | Demonstrated end-to-end across three illustrative scenarios | `test_artefacts/13`–`17_Layer_Report_*.md` |
 | Beta  | All prototype layers ≥ 95% per-layer reliability (combined 98.53%); substantive risk output surfaced in Risk Dashboard (30% CRIT / 49% HIGH / 15% MED / 6% LOW over the reference window) | `test_artefacts/18_AllLayers_Combined_Report.md`, `test_artefacts/07_Test_Run_Findings.md §20` |
-| Gamma | Pending; will incorporate industry field survey results | — |
+| Gamma (in progress) | Pending; will incorporate industry field survey results | — |
+
+**Latest tagged release:** [`v1.0-icse-demo`](https://github.com/gracebilliris/capra-prototype/releases/tag/v1.0-icse-demo) (commit `022d22d`) — pinned prototype snapshot referenced by the CAPRA publications programme.
+
+---
+
+## Related publications
+
+Peer-reviewed and preprint outputs that motivate, ground, or extend the CAPRA prototype in this repository. Statuses are conservative — items marked *accepted* are camera-ready with the venue; items marked *under review* have been submitted; *in preparation* items are drafts targeting the venue listed. Verified authoritative URLs are inlined; where a DOI has not yet been minted or is not yet on file, the venue and submission ID are listed instead.
+
+### Accepted / camera-ready
+
+- **G. Billiris, A. Q. Gill.** *Privacy in the Age of AI: A Taxonomy of Data Risks.* Proceedings of the SAI Computing Conference 2026, Springer LNNS. Camera-ready 11 Dec 2025.
+- **G. Billiris, A. Q. Gill, and co-authors.** *Federated Observability Architecture Pattern for the AI SDLC.* Information and Software Technology — ScienceDirect Special Issue (manuscript ID `INFSOF-D-26-00105`). Accepted.
+- **G. Billiris.** *Doctoral Symposium contribution — CAPRA reference architecture programme.* Proceedings of the 48th International Conference on Software Engineering (ICSE 2026) Doctoral Symposium, ACM/IEEE. Paper 53. Camera-ready.
+
+### Under review
+
+- **G. Billiris, A. Q. Gill.** *Human-AI collaboration for privacy risk assessment in agentic systems.* ACM Transactions on Software Engineering and Methodology (TOSEM) — submitted 17 Aug 2026.
+- **G. Billiris, A. Q. Gill.** *Risk Intelligence Layer for CAPRA.* ICSE 2027 Research Track — submitted.
+- **G. Billiris, A. Q. Gill.** *Context Processing Layer prototype.* DESRIST 2026 Prototype Track (paper `DESRIST_2026_paper_prototype`) — submitted.
+- **G. Billiris.** *Doctoral Consortium application.* DESRIST 2026 Doctoral Consortium (paper 183) — submitted with UTS Letter of Support.
+- **G. Billiris, A. Q. Gill.** *Context Processing Layer (revised short article).* Journal of Systems and Software — Trends short article (manuscript ID `INFSOF-S-26-00150`).
+- **G. Billiris, A. Q. Gill.** *Systematic literature review on agentic-AI data privacy risks.* Under review at a Q1 software-engineering venue.
+
+### In preparation (CAPRA architecture programme)
+
+The following manuscripts extend the six-layer reference architecture demonstrated by this prototype. Each is written to stand alone.
+
+| Target venue | Focus | Draft |
+|---|---|---|
+| ICSE 2027 Tool Demonstration | End-to-end prototype demonstration (this repository) | Ready pending DOI |
+| ACM Transactions on Autonomous and Adaptive Systems (TAAS) | Adaptive reassessment across change streams | Draft |
+| Empirical Software Engineering (EASE) | Whole-system measurement of the five executable stages | Draft |
+| International Symposium on Software Reliability Engineering (ISSRE) | Semantic reliability under fault injection | Draft |
+| ACM International Conference on the Foundations of Software Engineering (FSE) | AgentPrivBench — labelled benchmark for agentic-AI privacy detection | Draft |
+| Symposium on Analysis, Evolution and Reengineering (SANER) | Context drift detection | Draft |
+| IEEE Transactions on Software Engineering (TSE) | Comparative evaluation of architecture variants | Draft |
+| Journal of Systems and Software (JSS) | Applied CAPRA reference architecture | Draft |
+| Information and Software Technology (IST) | Executable privacy contracts | Draft |
+| IEEE Transactions on Technology and Society (TTS) | Socio-technical study of reviewer collaboration | Draft |
+
+> If you see this repository referenced by any published work above and the entry here is out of date, please open an issue.
+
+---
+
+## Release and DOI
+
+- **Reviewer-facing release:** [`v1.0-icse-demo`](https://github.com/gracebilliris/capra-prototype/releases/tag/v1.0-icse-demo) — the pinned snapshot used by the ICSE 2027 Tool Demonstration submission and by every venue listed above that cites the prototype.
+- **Zenodo DOI:** *pending mint.* The repository is registered with Zenodo via the GitHub webhook; the DOI will be embedded here once the release is published on Zenodo.
+- **Authorship and CRediT roles:** see [`AUTHORS.md`](AUTHORS.md).
+- **Machine-readable citation:** see [`CITATION.cff`](CITATION.cff).
+- **Release verification and archive:** see [`RELEASE_CHECKLIST.md`](RELEASE_CHECKLIST.md) and `scripts/verify_release.sh`.
 
 ---
 

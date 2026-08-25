@@ -1,0 +1,43 @@
+cff-version: 1.2.0
+title: "CAPRA: Context-Aware Privacy Risk Assessment prototype"
+message: "If you use this software artefact, please cite it using the metadata from this file."
+type: software
+authors:
+  - family-names: Billiris
+    given-names: Grace
+    orcid: "https://orcid.org/0009-0001-3122-9985"
+    affiliation: "University of Technology Sydney"
+repository-code: "https://github.com/gracebilliris/capra-prototype"
+url: "https://github.com/gracebilliris/capra-prototype"
+license: MIT
+version: "1.0-icse-demo"
+date-released: "2026-08-25"
+doi: "10.5281/zenodo.TODO" # TODO after mint
+abstract: >
+  CAPRA is an n8n-based prototype of a six-layer Context-Aware Privacy Risk
+  Assessment reference architecture for agentic AI systems processing
+  personally identifiable information. The artefact includes workflow exports,
+  dashboards, per-layer evidence, and reproduction documentation for the ICSE
+  Tool Demonstration submission.
+keywords:
+  - privacy
+  - privacy risk assessment
+  - context-aware
+  - agentic AI
+  - multi-agent systems
+  - reference architecture
+  - n8n
+  - reproducibility
+preferred-citation:
+  type: software
+  title: "CAPRA: Context-Aware Privacy Risk Assessment prototype"
+  authors:
+    - family-names: Billiris
+      given-names: Grace
+      orcid: "https://orcid.org/0009-0001-3122-9985"
+      affiliation: "University of Technology Sydney"
+  repository-code: "https://github.com/gracebilliris/capra-prototype"
+  license: MIT
+  version: "1.0-icse-demo"
+  date-released: "2026-08-25"
+  doi: "10.5281/zenodo.TODO" # TODO after mint
