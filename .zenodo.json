@@ -1,0 +1,41 @@
+{
+  "title": "CAPRA — Context-Aware Privacy Risk Assessment prototype",
+  "description": "An n8n-based prototype of the six-layer CAPRA reference architecture (DFL, CPL, CL, RIL, FRL, HIL) for context-aware privacy risk assessment in agentic AI systems processing personally identifiable information. Companion artefact to Grace Billiris's PhD research at the University of Technology Sydney. Includes the unified n8n workflow export, per-layer test reports, Grafana dashboards, per-domain test evidence (Student Admission / Healthcare / Retail), and a reproduction guide.",
+  "creators": [
+    {
+      "name": "Billiris, Grace",
+      "affiliation": "University of Technology Sydney",
+      "orcid": "0009-0001-3122-9985"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Gill, Asif Q.",
+      "affiliation": "University of Technology Sydney",
+      "type": "Supervisor"
+    }
+  ],
+  "keywords": [
+    "privacy",
+    "privacy risk assessment",
+    "context-aware",
+    "agentic AI",
+    "multi-agent systems",
+    "reference architecture",
+    "software engineering research",
+    "n8n",
+    "prototype",
+    "reproducibility"
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "communities": [],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/gracebilliris/capra-prototype",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}
