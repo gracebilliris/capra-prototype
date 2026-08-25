@@ -185,20 +185,21 @@ More detailed diagnostics in `test_artefacts/07_Test_Run_Findings.md`.
 
 Peer-reviewed and preprint outputs that motivate, ground, or extend the CAPRA prototype in this repository. Statuses are conservative — items marked *accepted* are camera-ready with the venue; items marked *under review* have been submitted; *in preparation* items are drafts targeting the venue listed. Verified authoritative URLs are inlined; where a DOI has not yet been minted or is not yet on file, the venue and submission ID are listed instead.
 
-### Accepted / camera-ready
+### Published
 
-- **G. Billiris, A. Q. Gill.** *Privacy in the Age of AI: A Taxonomy of Data Risks.* Proceedings of the SAI Computing Conference 2026, Springer LNNS. Camera-ready 11 Dec 2025.
-- **G. Billiris, A. Q. Gill, and co-authors.** *Federated Observability Architecture Pattern for the AI SDLC.* Information and Software Technology — ScienceDirect Special Issue (manuscript ID `INFSOF-D-26-00105`). Accepted.
-- **G. Billiris.** *Doctoral Symposium contribution — CAPRA reference architecture programme.* Proceedings of the 48th International Conference on Software Engineering (ICSE 2026) Doctoral Symposium, ACM/IEEE. Paper 53. Camera-ready.
+1. Billiris, G., Gill, A. & Bandara, M. (2025). *A Taxonomy of Data Risks in AI and Quantum Computing (QAI): A Systematic Review.* arXiv:[2509.20418](https://arxiv.org/abs/2509.20418).
+2. Billiris, G., Gill, A. & Bandara, M. (2025). *Privacy in the Age of AI: A Taxonomy of Data Risks.* arXiv:[2510.02357](https://arxiv.org/abs/2510.02357).
+3. Billiris, G. & Gill, A. *A Federated Observability Architecture Pattern for Reliable Agentic AI Software Systems across the AI SDLC.* Information and Software Technology (Special Issue). [j.infsof.2026.108260](https://doi.org/10.1016/j.infsof.2026.108260).
+
+### Accepted
+
+4. Billiris, G., Gill, A. & Bandara, M. (2026). *Systematic Literature Review of Data Privacy Risks in AI Systems.* Science and Information Computing Conference (SAI) 2026.
 
 ### Under review
 
-- **G. Billiris, A. Q. Gill.** *Human-AI collaboration for privacy risk assessment in agentic systems.* ACM Transactions on Software Engineering and Methodology (TOSEM) — submitted 17 Aug 2026.
-- **G. Billiris, A. Q. Gill.** *Risk Intelligence Layer for CAPRA.* ICSE 2027 Research Track — submitted.
-- **G. Billiris, A. Q. Gill.** *Context Processing Layer prototype.* DESRIST 2026 Prototype Track (paper `DESRIST_2026_paper_prototype`) — submitted.
-- **G. Billiris.** *Doctoral Consortium application.* DESRIST 2026 Doctoral Consortium (paper 183) — submitted with UTS Letter of Support.
-- **G. Billiris, A. Q. Gill.** *Context Processing Layer (revised short article).* Journal of Systems and Software — Trends short article (manuscript ID `INFSOF-S-26-00150`).
-- **G. Billiris, A. Q. Gill.** *Systematic literature review on agentic-AI data privacy risks.* Under review at a Q1 software-engineering venue.
+5. Billiris, G., Gill, A. & Bandara, M. *Agentic AI Privacy Risks: A Systematic Literature Review.* Journal (under review).
+6. Billiris, G., Gill, A., Haggag, O., Bandara, M. & Grundy, J. *CPL: A Context Processing Layer for Semantic Observability in Multi-Agent AI Systems.* SSRN:[7194446](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7194446).
+7. Billiris, G., Gill, A., Bandara, M. & Dudder, B. *Risk Intelligence Layer for Privacy Risk Assessment in Multi-Agent Systems.* ICSE 2027 (Research Track).
 
 ### In preparation (CAPRA architecture programme)
 
