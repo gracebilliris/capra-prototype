@@ -103,6 +103,25 @@
   .layer .n{font-size:15px; color:var(--ink); margin-bottom:4px}
   .layer .d{font-size:13px; color:var(--slate)}
 
+  .featured-publication{
+    border:1px solid var(--sky); border-left:5px solid var(--midblue);
+    border-radius:12px; background:var(--soft); padding:24px; margin:22px 0 28px;
+  }
+  .featured-publication .label{
+    margin:0 0 8px; color:var(--midblue); font-size:12px; font-weight:700;
+    letter-spacing:.12em; text-transform:uppercase;
+  }
+  .featured-publication h3{margin:0 0 10px; color:var(--ink); font-size:22px}
+  .featured-publication p{margin:0 0 14px; color:var(--slate)}
+  .featured-publication .cta{
+    display:inline-block; padding:9px 16px; border-radius:8px;
+    background:var(--navy); color:var(--paper); font-weight:600; font-size:14px;
+  }
+  .featured-publication .cta:hover{background:var(--accent); text-decoration:none}
+  .featured-publication .cta.secondary{
+    background:transparent; color:var(--navy); border:1px solid var(--navy); margin-left:8px;
+  }
+
   footer{
     color:var(--muted); font-size:13px; padding:32px 0 48px;
     border-top:1px solid var(--line); margin-top:32px; text-align:center;
@@ -203,25 +222,25 @@
 
   <section>
     <h2>Related publications</h2>
-    <p style="color:var(--slate)">Peer-reviewed and preprint outputs that motivate, ground, or extend the CAPRA prototype.</p>
+    <p style="color:var(--slate)">Published peer-reviewed and preprint outputs that motivate, ground, or extend the CAPRA prototype.</p>
 
-    <h3 style="margin-top:22px">Published</h3>
+    <article class="featured-publication">
+      <p class="label">Featured publication · A-ranked journal</p>
+      <h3>A Federated Observability Architecture Pattern for Reliable Agentic AI Software Systems Across the AI Software Development Lifecycle</h3>
+      <p>Published in <em>Information and Software Technology</em>, Volume 199, Article 108260 (2026). The paper presents a seven-layer architecture pattern for federating and observing heterogeneous telemetry across the AI software development lifecycle.</p>
+      <a class="cta" href="https://doi.org/10.1016/j.infsof.2026.108260">Read the paper</a>
+      <a class="cta secondary" href="https://github.com/gracebilliris/federated-observability-architecture-pattern">View the prototype</a>
+    </article>
+
+    <h3>Published</h3>
     <ol style="line-height:1.7">
-      <li>Billiris, G., Gill, A. &amp; Bandara, M. (2025). <em>A Taxonomy of Data Risks in AI and Quantum Computing (QAI): A Systematic Review.</em> arXiv:<a href="https://arxiv.org/abs/2509.20418">2509.20418</a>.</li>
-      <li>Billiris, G., Gill, A. &amp; Bandara, M. (2025). <em>Privacy in the Age of AI: A Taxonomy of Data Risks.</em> arXiv:<a href="https://arxiv.org/abs/2510.02357">2510.02357</a>.</li>
-      <li>Billiris, G. &amp; Gill, A. <em>A Federated Observability Architecture Pattern for Reliable Agentic AI Software Systems across the AI SDLC.</em> Information and Software Technology (Special Issue). <a href="https://doi.org/10.1016/j.infsof.2026.108260">j.infsof.2026.108260</a>.</li>
-    </ol>
-
-    <h3>Accepted</h3>
-    <ol start="4" style="line-height:1.7">
-      <li>Billiris, G., Gill, A. &amp; Bandara, M. (2026). <em>Systematic Literature Review of Data Privacy Risks in AI Systems.</em> Science and Information Computing Conference (SAI) 2026.</li>
-    </ol>
-
-    <h3>Under review</h3>
-    <ol start="5" style="line-height:1.7">
-      <li>Billiris, G., Gill, A. &amp; Bandara, M. <em>Agentic AI Privacy Risks: A Systematic Literature Review.</em> Journal (under review).</li>
-      <li>Billiris, G., Gill, A., Haggag, O., Bandara, M. &amp; Grundy, J. <em>CPL: A Context Processing Layer for Semantic Observability in Multi-Agent AI Systems.</em> SSRN:<a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7194446">7194446</a>.</li>
-      <li>Billiris, G., Gill, A., Bandara, M. &amp; Dudder, B. <em>Risk Intelligence Layer for Privacy Risk Assessment in Multi-Agent Systems.</em> ICSE 2027 (Research Track).</li>
+      <li>Billiris, G., &amp; Gill, A. (2026). <em>A Federated Observability Architecture Pattern for Reliable Agentic AI Software Systems Across the AI Software Development Lifecycle.</em> <em>Information and Software Technology, 199</em>, Article 108260. <a href="https://doi.org/10.1016/j.infsof.2026.108260">https://doi.org/10.1016/j.infsof.2026.108260</a></li>
+      <li>Billiris, G., Gill, A., Haggag, O., Bandara, M., &amp; Grundy, J. (2026). <em>CPL: A Context Processing Layer for Semantic Observability in Multi-Agent AI Systems.</em> SSRN 7194446. <a href="https://doi.org/10.2139/ssrn.7194446">https://doi.org/10.2139/ssrn.7194446</a></li>
+      <li>Billiris, G., Gill, A., &amp; Bandara, M. (2026). <em>Systematic Literature Review of Data Privacy Risks in AI Systems.</em> <em>Science and Information Computing Conference (SAI) 2026</em>. <a href="https://link.springer.com/book/10.1007/978-3-032-24810-7">https://link.springer.com/book/10.1007/978-3-032-24810-7</a></li>
+      <li>Billiris, G., Gill, A., &amp; Bandara, M. (2025). <em>Privacy in the Age of AI: A Taxonomy of Data Risks.</em> arXiv. <a href="https://doi.org/10.48550/arXiv.2510.02357">https://doi.org/10.48550/arXiv.2510.02357</a></li>
+      <li>Billiris, G., Gill, A., &amp; Bandara, M. (2025). <em>A Taxonomy of Data Risks in AI and Quantum Computing (QAI): A Systematic Review.</em> arXiv. <a href="https://doi.org/10.48550/arXiv.2509.20418">https://doi.org/10.48550/arXiv.2509.20418</a></li>
+      <li>Billiris, G., Gill, A., Oppermann, I., &amp; Niazi, M. (2024). <em>Towards the Development of a Copyright Risk Checker Tool for Generative Artificial Intelligence Systems.</em> <em>Digital Government: Research and Practice, 5</em>(4), Article 41. <a href="https://doi.org/10.1145/3703459">https://doi.org/10.1145/3703459</a></li>
+      <li>Billiris, G., &amp; Gill, A. Q. (2024). <em>An Initial Review of the Copyright Concerns of Generative Artificial Intelligence.</em> <em>ACIS 2024 Proceedings</em>, Article 17. <a href="https://aisel.aisnet.org/acis2024/17/">https://aisel.aisnet.org/acis2024/17/</a></li>
     </ol>
   </section>
 

@@ -183,42 +183,17 @@ More detailed diagnostics in `test_artefacts/07_Test_Run_Findings.md`.
 
 ## Related publications
 
-Peer-reviewed and preprint outputs that motivate, ground, or extend the CAPRA prototype in this repository. Statuses are conservative — items marked *accepted* are camera-ready with the venue; items marked *under review* have been submitted; *in preparation* items are drafts targeting the venue listed. Verified authoritative URLs are inlined; where a DOI has not yet been minted or is not yet on file, the venue and submission ID are listed instead.
+Published peer-reviewed and preprint outputs that motivate, ground, or extend the CAPRA prototype in this repository.
 
-### Published
+> **Featured publication:** Billiris, G., & Gill, A. (2026). *A Federated Observability Architecture Pattern for Reliable Agentic AI Software Systems Across the AI Software Development Lifecycle.* *Information and Software Technology, 199*, Article 108260. Published in an A-ranked journal. [Read the paper](https://doi.org/10.1016/j.infsof.2026.108260) or [view the prototype](https://github.com/gracebilliris/federated-observability-architecture-pattern).
 
-1. Billiris, G., Gill, A. & Bandara, M. (2025). *A Taxonomy of Data Risks in AI and Quantum Computing (QAI): A Systematic Review.* arXiv:[2509.20418](https://arxiv.org/abs/2509.20418).
-2. Billiris, G., Gill, A. & Bandara, M. (2025). *Privacy in the Age of AI: A Taxonomy of Data Risks.* arXiv:[2510.02357](https://arxiv.org/abs/2510.02357).
-3. Billiris, G. & Gill, A. *A Federated Observability Architecture Pattern for Reliable Agentic AI Software Systems across the AI SDLC.* Information and Software Technology (Special Issue). [j.infsof.2026.108260](https://doi.org/10.1016/j.infsof.2026.108260).
-
-### Accepted
-
-4. Billiris, G., Gill, A. & Bandara, M. (2026). *Systematic Literature Review of Data Privacy Risks in AI Systems.* Science and Information Computing Conference (SAI) 2026.
-
-### Under review
-
-5. Billiris, G., Gill, A. & Bandara, M. *Agentic AI Privacy Risks: A Systematic Literature Review.* Journal (under review).
-6. Billiris, G., Gill, A., Haggag, O., Bandara, M. & Grundy, J. *CPL: A Context Processing Layer for Semantic Observability in Multi-Agent AI Systems.* SSRN:[7194446](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7194446).
-7. Billiris, G., Gill, A., Bandara, M. & Dudder, B. *Risk Intelligence Layer for Privacy Risk Assessment in Multi-Agent Systems.* ICSE 2027 (Research Track).
-
-### In preparation (CAPRA architecture programme)
-
-The following manuscripts extend the six-layer reference architecture demonstrated by this prototype. Each is written to stand alone.
-
-| Target venue | Focus | Draft |
-|---|---|---|
-| ICSE 2027 Tool Demonstration | End-to-end prototype demonstration (this repository) | Ready pending DOI |
-| ACM Transactions on Autonomous and Adaptive Systems (TAAS) | Adaptive reassessment across change streams | Draft |
-| Empirical Software Engineering (EASE) | Whole-system measurement of the five executable stages | Draft |
-| International Symposium on Software Reliability Engineering (ISSRE) | Semantic reliability under fault injection | Draft |
-| ACM International Conference on the Foundations of Software Engineering (FSE) | AgentPrivBench — labelled benchmark for agentic-AI privacy detection | Draft |
-| Symposium on Analysis, Evolution and Reengineering (SANER) | Context drift detection | Draft |
-| IEEE Transactions on Software Engineering (TSE) | Comparative evaluation of architecture variants | Draft |
-| Journal of Systems and Software (JSS) | Applied CAPRA reference architecture | Draft |
-| Information and Software Technology (IST) | Executable privacy contracts | Draft |
-| IEEE Transactions on Technology and Society (TTS) | Socio-technical study of reviewer collaboration | Draft |
-
-> If you see this repository referenced by any published work above and the entry here is out of date, please open an issue.
+1. Billiris, G., & Gill, A. (2026). *A Federated Observability Architecture Pattern for Reliable Agentic AI Software Systems Across the AI Software Development Lifecycle.* *Information and Software Technology, 199*, Article 108260. https://doi.org/10.1016/j.infsof.2026.108260
+2. Billiris, G., Gill, A., Haggag, O., Bandara, M., & Grundy, J. (2026). *CPL: A Context Processing Layer for Semantic Observability in Multi-Agent AI Systems.* SSRN 7194446. https://doi.org/10.2139/ssrn.7194446
+3. Billiris, G., Gill, A., & Bandara, M. (2026). *Systematic Literature Review of Data Privacy Risks in AI Systems.* *Science and Information Computing Conference (SAI) 2026*. https://link.springer.com/book/10.1007/978-3-032-24810-7
+4. Billiris, G., Gill, A., & Bandara, M. (2025). *Privacy in the Age of AI: A Taxonomy of Data Risks.* arXiv. https://doi.org/10.48550/arXiv.2510.02357
+5. Billiris, G., Gill, A., & Bandara, M. (2025). *A Taxonomy of Data Risks in AI and Quantum Computing (QAI): A Systematic Review.* arXiv. https://doi.org/10.48550/arXiv.2509.20418
+6. Billiris, G., Gill, A., Oppermann, I., & Niazi, M. (2024). *Towards the Development of a Copyright Risk Checker Tool for Generative Artificial Intelligence Systems.* *Digital Government: Research and Practice, 5*(4), Article 41. https://doi.org/10.1145/3703459
+7. Billiris, G., & Gill, A. Q. (2024). *An Initial Review of the Copyright Concerns of Generative Artificial Intelligence.* *ACIS 2024 Proceedings*, Article 17. https://aisel.aisnet.org/acis2024/17/
 
 ---
 
@@ -239,4 +214,3 @@ If you refer to this prototype, please cite the CA3 candidature report:
 > Billiris, G. (2026). *Privacy Protection for Agentic AI Systems Processing Personally Identifiable Information* — Candidature Assessment 3 Report, University of Technology Sydney.
 
 This work is released for academic examination. Contact the author (@gracebilliris on GitHub) for other uses.
-
