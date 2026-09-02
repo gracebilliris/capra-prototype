@@ -17,6 +17,7 @@ concluded, and what a clean-environment run actually produced.
 |---|---|
 | Base commit | `0c5858f` on `main` |
 | Working branch | `icse-demo-rc` |
+| Candidate tag | `v1.1-icse-demo-rc1` (local; not yet pushed) |
 | Historical release, unchanged | `v1.0-icse-demo` at commit `022d22d` |
 | Licence | MIT, unchanged |
 | Reviewer route | `reviewer/` |
