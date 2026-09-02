@@ -52,3 +52,9 @@ test_artefacts/recordings/
 test_artefacts/snapshots/
 venv/
 volumes/
+.env.local
+
+# reviewer route local environment (never committed)
+reviewer/.env
+reviewer/.import/
+reviewer/logs/*.log

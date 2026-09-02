@@ -1,0 +1,481 @@
+{
+  "source": "/Users/gracebilliris/Projects/capra-prototype/workflows/CAPRA_Prototype_unified_patched.json",
+  "target": "/Users/gracebilliris/Projects/capra-prototype/reviewer/workflows/CAPRA_reviewer_local.json",
+  "model": "llama3.2",
+  "domain": "admissions",
+  "node_count": 168,
+  "change_count": 71,
+  "changes": [
+    {
+      "node": "Find documents",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Insert to Enriched Telemetry DB",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Insert to Raw Ontology DB",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Graph Importer to GraphDB",
+      "action": "retargeted-endpoint",
+      "from": "http://host.docker.internal:3030/ontology/update",
+      "to": "http://fuseki:3030/ontology/update"
+    },
+    {
+      "node": "Insert to Telemetry Transformation DB",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Telemetry DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Push Grafana Metrics",
+      "action": "retargeted-endpoint",
+      "from": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+      "to": "http://loki:3100/loki/api/v1/push"
+    },
+    {
+      "node": "Find documents from raw onotlogy",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Push Grafana Metrics2",
+      "action": "retargeted-endpoint",
+      "from": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+      "to": "http://loki:3100/loki/api/v1/push"
+    },
+    {
+      "node": "Schedule Trigger",
+      "action": "slowed-cadence",
+      "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 5}]}",
+      "to": "every 60s",
+      "reason": "a local language model cannot sustain the published ten-second cadence"
+    },
+    {
+      "node": "get",
+      "action": "disabled",
+      "reason": "polled a Kafka REST proxy that the compose file never provisioned"
+    },
+    {
+      "node": "Get Privacy Risk Taxonomy",
+      "action": "retargeted-endpoint",
+      "from": "http://host.docker.internal:7200/repositories/fedxvirtualsparql",
+      "to": "http://fuseki:3030/ontology/sparql"
+    },
+    {
+      "node": "Transforming JSON-LD to nodes & edges (2)",
+      "action": "compat-shim",
+      "reason": "restores the expanded JSON-LD array shape the released code expects after the knowledge-store query moved from an unprovisioned GraphDB repository to the provisioned Fuseki dataset"
+    },
+    {
+      "node": "Get Context",
+      "action": "retargeted-endpoint",
+      "from": "http://host.docker.internal:7200/repositories/fedxvirtualsparql",
+      "to": "http://fuseki:3030/ontology/sparql"
+    },
+    {
+      "node": "Insert to Scenarios DB",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Risk Intelligence DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Find documents from enriched_telemetry_raw",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Telemetry DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Insert to Scenario Simulation Results DB (2)",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Risk Intelligence DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Insert to Scenario Simulation Results DB (1)",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Telemetry DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Insert to Orchestration Agent Scenarios",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Risk Intelligence DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Find documents from scenario_simulation_results",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Risk Intelligence DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Insert to Evaluation Results",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Feedback and Refinement DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Insert to Feedback Results",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Feedback and Refinement DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Find Feedback Results",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Feedback and Refinement DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Graph Importer to GraphDB1",
+      "action": "retargeted-endpoint",
+      "from": "http://host.docker.internal:3030/ontology/update",
+      "to": "http://fuseki:3030/ontology/update"
+    },
+    {
+      "node": "Find documents from local_raw",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Push Grafana Metrics (Data Fed.)",
+      "action": "retargeted-endpoint",
+      "from": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+      "to": "http://loki:3100/loki/api/v1/push"
+    },
+    {
+      "node": "Insert to Telemetry DB",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Read EHRdata",
+      "action": "repointed-input",
+      "to": "/home/node/.n8n-files/EHR.csv",
+      "note": "synthetic fixture mounted from reviewer/fixtures"
+    },
+    {
+      "node": "Insert Events to Local DB",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Transforming JSON-LD to nodes & edges (1)",
+      "action": "compat-shim",
+      "reason": "restores the expanded JSON-LD array shape the released code expects after the knowledge-store query moved from an unprovisioned GraphDB repository to the provisioned Fuseki dataset"
+    },
+    {
+      "node": "Insert to Revision Results",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Feedback and Refinement DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Push Grafana Metrics1",
+      "action": "retargeted-endpoint",
+      "from": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+      "to": "http://loki:3100/loki/api/v1/push"
+    },
+    {
+      "node": "Insert to Risk Inference Results DB1",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Telemetry DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Send a message",
+      "action": "removed",
+      "reason": "required an external mail account and carried a hard-coded personal address"
+    },
+    {
+      "node": "Insert to Contextual Scoring Results DB",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Risk Intelligence DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Find documents from Contextual Scoring DB",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Risk Intelligence DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Find documents from local_raw2",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Graph Importer to GraphDB2",
+      "action": "retargeted-endpoint",
+      "from": "http://host.docker.internal:3030/ontology/update",
+      "to": "http://fuseki:3030/ontology/update"
+    },
+    {
+      "node": "Execute CPL",
+      "action": "slowed-cadence",
+      "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
+      "to": "every 60s",
+      "reason": "a local language model cannot sustain the published ten-second cadence"
+    },
+    {
+      "node": "Execute RIL",
+      "action": "slowed-cadence",
+      "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
+      "to": "every 60s",
+      "reason": "a local language model cannot sustain the published ten-second cadence"
+    },
+    {
+      "node": "Execute E&RL",
+      "action": "slowed-cadence",
+      "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
+      "to": "every 60s",
+      "reason": "a local language model cannot sustain the published ten-second cadence"
+    },
+    {
+      "node": "Execute DFL",
+      "action": "slowed-cadence",
+      "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
+      "to": "every 60s",
+      "reason": "a local language model cannot sustain the published ten-second cadence"
+    },
+    {
+      "node": "Azure OpenAI Telemetry Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Ontology Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Transformation Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Normalisation Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Data Intake Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Schema Understanding Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Scenario Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Simulation Orchestration Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Simulation Model 1",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Simulation Model 2",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Inference Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Evaluation Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Feedback & Refinement Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Feedback to Action Translation Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Summary Model",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Insert Events to Local DB1",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Azure OpenAI Data Intake Model1",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Schema Understanding Model1",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Insert Events to Local DB2",
+      "action": "rebound-credential",
+      "credential": "mongoDb",
+      "from": "Local DB",
+      "to": "CAPRA Local Mongo"
+    },
+    {
+      "node": "Azure OpenAI Data Intake Model2",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Azure OpenAI Schema Understanding Model2",
+      "action": "retargeted-model",
+      "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "model": "llama3.2"
+    },
+    {
+      "node": "Read retaildata",
+      "action": "repointed-input",
+      "to": "/home/node/.n8n-files/retail_employees.csv",
+      "note": "synthetic fixture mounted from reviewer/fixtures"
+    },
+    {
+      "node": "Read admissiondata",
+      "action": "repointed-input",
+      "to": "/home/node/.n8n-files/admissiondata.csv",
+      "note": "synthetic fixture mounted from reviewer/fixtures"
+    },
+    {
+      "node": "Execute ESL Admission Data",
+      "action": "slowed-cadence",
+      "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
+      "to": "every 300s",
+      "reason": "a local language model cannot sustain the published ten-second cadence"
+    },
+    {
+      "node": "Execute ESL EHR Data",
+      "action": "slowed-cadence",
+      "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
+      "to": "every 300s",
+      "reason": "a local language model cannot sustain the published ten-second cadence"
+    },
+    {
+      "node": "Execute ESL EHR Data",
+      "action": "disabled",
+      "reason": "domain isolation: this run demonstrates the 'admissions' domain"
+    },
+    {
+      "node": "Execute ESL Retail Data",
+      "action": "slowed-cadence",
+      "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
+      "to": "every 300s",
+      "reason": "a local language model cannot sustain the published ten-second cadence"
+    },
+    {
+      "node": "Execute ESL Retail Data",
+      "action": "disabled",
+      "reason": "domain isolation: this run demonstrates the 'admissions' domain"
+    },
+    {
+      "node": "Push Grafana Metrics3",
+      "action": "retargeted-endpoint",
+      "from": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+      "to": "http://loki:3100/loki/api/v1/push"
+    },
+    {
+      "node": "Push Grafana Metrics4",
+      "action": "retargeted-endpoint",
+      "from": "https://logs-prod-026.grafana.net/loki/api/v1/push",
+      "to": "http://loki:3100/loki/api/v1/push"
+    }
+  ]
+}

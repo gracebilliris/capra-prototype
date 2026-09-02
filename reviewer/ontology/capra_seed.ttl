@@ -1,0 +1,108 @@
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix ex:   <http://example.org/privacy-risk#> .
+@prefix tel:  <http://example.org/telemetry#> .
+@prefix inst: <http://example.org/telemetry/inst:> .
+
+# CAPRA reviewer route — minimal ontology seed.
+#
+# Scope note. This file is a small, self-contained starting graph so that the
+# Risk Intelligence Layer's taxonomy and context queries return a non-empty
+# result on a fresh machine. It is a demonstration seed, not the privacy-risk
+# taxonomy used in the published campaigns, and no result produced over it
+# should be read as a validated privacy assessment. The workflow's Graph
+# Importer nodes add further triples as telemetry flows.
+
+ex:PrivacyRisk a owl:Class ;
+    rdfs:label "Privacy risk" ;
+    rdfs:comment "A situation in which personal information may be handled contrary to the norms of its originating context." .
+
+ex:UnauthorisedDisclosure a owl:Class ;
+    rdfs:subClassOf ex:PrivacyRisk ;
+    rdfs:label "Unauthorised disclosure" ;
+    rdfs:comment "Personal information is transmitted to an actor outside the sanctioned recipients of the originating context." .
+
+ex:SecondaryUse a owl:Class ;
+    rdfs:subClassOf ex:PrivacyRisk ;
+    rdfs:label "Secondary use" ;
+    rdfs:comment "Personal information collected for one purpose is used for a different purpose." .
+
+ex:ExcessiveCollection a owl:Class ;
+    rdfs:subClassOf ex:PrivacyRisk ;
+    rdfs:label "Excessive collection" ;
+    rdfs:comment "More personal information is collected or retained than the stated purpose requires." .
+
+ex:Reidentification a owl:Class ;
+    rdfs:subClassOf ex:PrivacyRisk ;
+    rdfs:label "Re-identification" ;
+    rdfs:comment "Records presented as de-identified can be linked back to an individual." .
+
+ex:AccessEscalation a owl:Class ;
+    rdfs:subClassOf ex:PrivacyRisk ;
+    rdfs:label "Access escalation" ;
+    rdfs:comment "An actor obtains access to personal information beyond its assigned role." .
+
+ex:CrossContextReuse a owl:Class ;
+    rdfs:subClassOf ex:PrivacyRisk ;
+    rdfs:label "Cross-context reuse" ;
+    rdfs:comment "Information flows from one social context into another with different transmission norms." .
+
+ex:hasSeverity a owl:DatatypeProperty ;
+    rdfs:label "has severity" ;
+    rdfs:domain ex:PrivacyRisk ;
+    rdfs:range xsd:string .
+
+ex:appliesToDataCategory a owl:ObjectProperty ;
+    rdfs:label "applies to data category" ;
+    rdfs:domain ex:PrivacyRisk .
+
+ex:DirectIdentifier a owl:Class ;
+    rdfs:label "Direct identifier" .
+
+ex:SpecialCategoryData a owl:Class ;
+    rdfs:label "Special category data" .
+
+ex:ContactData a owl:Class ;
+    rdfs:label "Contact data" .
+
+ex:UnauthorisedDisclosure ex:appliesToDataCategory ex:DirectIdentifier , ex:ContactData ;
+    ex:hasSeverity "high" .
+
+ex:SecondaryUse ex:appliesToDataCategory ex:SpecialCategoryData ;
+    ex:hasSeverity "medium" .
+
+ex:Reidentification ex:appliesToDataCategory ex:SpecialCategoryData ;
+    ex:hasSeverity "high" .
+
+ex:ExcessiveCollection ex:hasSeverity "medium" .
+ex:AccessEscalation ex:hasSeverity "high" .
+ex:CrossContextReuse ex:hasSeverity "medium" .
+
+# Telemetry context vocabulary used by the Context Processing Layer queries.
+
+tel:Agent a owl:Class ; rdfs:label "Agent" .
+tel:Tool a owl:Class ; rdfs:label "Tool" .
+tel:DataFlow a owl:Class ; rdfs:label "Data flow" .
+tel:hasComment a owl:DatatypeProperty ; rdfs:label "has comment" .
+tel:hasConfidence a owl:DatatypeProperty ; rdfs:label "has confidence" .
+tel:relationshipSource a owl:ObjectProperty ; rdfs:label "relationship source" .
+tel:relationshipTarget a owl:ObjectProperty ; rdfs:label "relationship target" .
+
+inst:seed-agent-admissions a tel:Agent ;
+    inst:label "admissions agent" ;
+    tel:hasComment "seed instance for the reviewer route" ;
+    tel:hasConfidence "1.0" .
+
+inst:seed-agent-financial-aid a tel:Agent ;
+    inst:label "financial aid agent" ;
+    tel:hasComment "seed instance for the reviewer route" ;
+    tel:hasConfidence "1.0" .
+
+inst:seed-flow-1 a tel:DataFlow ;
+    inst:label "applicant record shared with financial aid agent" ;
+    tel:relationshipSource inst:seed-agent-admissions ;
+    tel:relationshipTarget inst:seed-agent-financial-aid ;
+    tel:hasComment "seed instance for the reviewer route" ;
+    tel:hasConfidence "1.0" .

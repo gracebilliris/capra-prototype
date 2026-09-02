@@ -1,0 +1,128 @@
+# CAPRA reviewer route — fully local, credential-free.
+#
+# Every service a reviewer needs runs in this file. Nothing here requires an
+# external account, an API key, or a paid endpoint. Start it with:
+#
+#   docker compose -f reviewer/docker-compose.reviewer.yml --env-file reviewer/.env up -d
+#
+# Ports are deliberately offset from the reference stack in docs/docker-compose.yml
+# so both can coexist on one machine.
+
+name: capra-reviewer
+
+services:
+
+  n8n:
+    image: ${CAPRA_N8N_IMAGE:-n8nio/n8n:2.6.4}
+    container_name: capra-reviewer-n8n
+    restart: unless-stopped
+    ports:
+      - "${CAPRA_N8N_PORT:-5679}:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - WEBHOOK_URL=http://localhost:${CAPRA_N8N_PORT:-5679}/
+      - GENERIC_TIMEZONE=Etc/UTC
+      - N8N_RUNNERS_ENABLED=true
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_VERSION_NOTIFICATIONS_ENABLED=false
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:?run reviewer/scripts/bootstrap.sh first}
+      # A local model is slow. Cap concurrent production executions so a slow
+      # stage cannot queue faster than it drains.
+      - N8N_CONCURRENCY_PRODUCTION_LIMIT=${CAPRA_CONCURRENCY:-5}
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=72
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./fixtures:/home/node/.n8n-files:ro
+    depends_on:
+      fuseki:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  mongo:
+    image: mongo:7
+    container_name: capra-reviewer-mongo
+    restart: unless-stopped
+    ports:
+      - "${CAPRA_MONGO_PORT:-27019}:27017"
+    command: ["mongod", "--bind_ip_all"]
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ping:1}).ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  fuseki:
+    image: stain/jena-fuseki:5.0.0
+    container_name: capra-reviewer-fuseki
+    restart: unless-stopped
+    ports:
+      - "${CAPRA_FUSEKI_PORT:-3031}:3030"
+    environment:
+      - ADMIN_PASSWORD=capra-local-demo
+      - FUSEKI_DATASET_1=ontology
+      - JVM_ARGS=-Xmx1g
+    volumes:
+      - fuseki_data:/fuseki
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost:3030/$$/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Containerised language model. Enabled with the 'container-llm' profile,
+  # which bootstrap.sh selects by default. Docker Desktop on macOS cannot pass
+  # the Apple GPU through to a container, so on macOS prefer the host-installed
+  # Ollama route (bootstrap.sh --host-ollama), which is also credential-free.
+  ollama:
+    image: ollama/ollama:0.12.3
+    container_name: capra-reviewer-ollama
+    profiles: ["container-llm"]
+    restart: unless-stopped
+    ports:
+      - "${CAPRA_OLLAMA_PORT:-11435}:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  loki:
+    image: grafana/loki:3.1.1
+    container_name: capra-reviewer-loki
+    restart: unless-stopped
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    ports:
+      - "${CAPRA_LOKI_PORT:-3101}:3100"
+    volumes:
+      - loki_data:/loki
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: capra-reviewer-grafana
+    restart: unless-stopped
+    ports:
+      - "${CAPRA_GRAFANA_PORT:-3002}:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - loki
+
+volumes:
+  n8n_data:
+  mongo_data:
+  fuseki_data:
+  ollama_data:
+  loki_data:
+  grafana_data:
