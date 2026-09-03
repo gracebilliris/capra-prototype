@@ -1,7 +1,21 @@
-# CAPRA reviewer route — fully local, credential-free.
+# CAPRA reviewer route — no-build local stack.
 #
-# Every service a reviewer needs runs in this file. Nothing here requires an
-# external account, an API key, or a paid endpoint. Start it with:
+# Every service a reviewer needs runs in this file: the n8n orchestration
+# engine, MongoDB, Fuseki, Loki, and Grafana. Nothing is built from source;
+# every component is a published container image.
+#
+# Language model. The preferred configuration binds the workflow's agents to
+# ONE generic OpenAI-compatible endpoint that the reviewer supplies (base URL,
+# API key, model name) through the git-ignored reviewer/.env. No endpoint value
+# appears in this file, and the route is not tied to any particular vendor. The
+# 'ollama' service below is an OPTIONAL credential-free fallback, enabled only
+# with the 'container-llm' profile.
+#
+# Start it with:
+#
+#   ./reviewer/scripts/bootstrap.sh
+#
+# or, directly:
 #
 #   docker compose -f reviewer/docker-compose.reviewer.yml --env-file reviewer/.env up -d
 #
@@ -29,8 +43,9 @@ services:
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_VERSION_NOTIFICATIONS_ENABLED=false
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY:?run reviewer/scripts/bootstrap.sh first}
-      # A local model is slow. Cap concurrent production executions so a slow
-      # stage cannot queue faster than it drains.
+      # A remote endpoint has latency and a local model is slow. Cap concurrent
+      # production executions so a slow stage cannot queue faster than it
+      # drains, and so a metered endpoint is not hit in parallel bursts.
       - N8N_CONCURRENCY_PRODUCTION_LIMIT=${CAPRA_CONCURRENCY:-5}
       - EXECUTIONS_DATA_PRUNE=true
       - EXECUTIONS_DATA_MAX_AGE=72
@@ -76,10 +91,12 @@ services:
       timeout: 5s
       retries: 10
 
-  # Containerised language model. Enabled with the 'container-llm' profile,
-  # which bootstrap.sh selects by default. Docker Desktop on macOS cannot pass
-  # the Apple GPU through to a container, so on macOS prefer the host-installed
-  # Ollama route (bootstrap.sh --host-ollama), which is also credential-free.
+  # OPTIONAL fallback only. Containerised language model, enabled with the
+  # 'container-llm' profile, which bootstrap.sh selects when you pass
+  # --container-ollama. The preferred route uses a generic OpenAI-compatible
+  # endpoint instead and never starts this service. Docker Desktop on macOS
+  # cannot pass the Apple GPU through to a container, so on macOS prefer
+  # bootstrap.sh --host-ollama if you need the fallback at all.
   ollama:
     image: ollama/ollama:0.12.3
     container_name: capra-reviewer-ollama

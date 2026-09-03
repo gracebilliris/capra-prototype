@@ -1,0 +1,19 @@
+{
+  "artefact": "openai-compatible endpoint binding probe",
+  "purpose": "Demonstrates that the generic OpenAI-compatible binding is real and automated: the workflow activates on n8n 2.6.4 and its agent nodes issue calls to the base URL configured in reviewer/.env, with no credential wiring in the n8n UI.",
+  "captured_utc": "2026-09-03T04:34:17Z",
+  "llm_provider": "openai-compatible",
+  "endpoint_used": "https://endpoint.invalid/v1  (RFC 6761 reserved TLD; deliberately unresolvable negative control)",
+  "api_key_used": "negative-control-no-such-key  (not a credential; no real key was used at any point)",
+  "model_requested": "negative-control-model",
+  "workflow_activation": "succeeded; n8n logged 'Activated workflow \"CAPRA Reviewer Route (admissions, openai-compatible)\"' with no node type version error",
+  "executions_by_status": {
+    "error": 1,
+    "new": 1,
+    "success": 3
+  },
+  "error_evidence": [
+    "https://endpoint.invalid/v1"
+  ],
+  "boundary": "No live OpenAI-compatible endpoint or API credential was available, so NO end-to-end model execution is claimed. What is established: node resolution, activation, credential import, credential binding, and an outbound call to the configured base URL. What is not established: any model response, any stage output produced by a hosted model."
+}

@@ -1,0 +1,99 @@
+
+=== 0/8 Preconditions ===
+docker 29.2.0
+
+=== 1/8 Local environment file ===
+reusing existing /Users/gracebilliris/Projects/capra-prototype/reviewer/.env
+generated a local n8n encryption key
+endpoint placeholders retained (--configure-only): the stack will start,
+but no model call can succeed and no health check will claim one did.
+
+=== 2/8 Synthetic domain inputs ===
+wrote /Users/gracebilliris/Projects/capra-prototype/reviewer/fixtures/admissiondata.csv (2170 bytes)
+wrote /Users/gracebilliris/Projects/capra-prototype/reviewer/fixtures/EHR.csv (3264 bytes)
+wrote /Users/gracebilliris/Projects/capra-prototype/reviewer/fixtures/retail_employees.csv (464 bytes)
+
+=== 3/8 Reviewer workflow export ===
+wrote /Users/gracebilliris/Projects/capra-prototype/reviewer/workflows/CAPRA_reviewer_local.json (168 nodes, 71 changes)
+provider: openai-compatible, model: replace-with-your-model-name
+remaining credential types: ['mongoDb', 'openAiApi']
+
+=== 4/8 Start containers ===
+ Network capra-reviewer_default Creating
+ Network capra-reviewer_default Created
+ Volume capra-reviewer_fuseki_data Creating
+ Volume capra-reviewer_fuseki_data Created
+ Volume capra-reviewer_loki_data Creating
+ Volume capra-reviewer_loki_data Created
+ Volume capra-reviewer_grafana_data Creating
+ Volume capra-reviewer_grafana_data Created
+ Volume capra-reviewer_n8n_data Creating
+ Volume capra-reviewer_n8n_data Created
+ Volume capra-reviewer_mongo_data Creating
+ Volume capra-reviewer_mongo_data Created
+ Container capra-reviewer-loki Creating
+ Container capra-reviewer-fuseki Creating
+ Container capra-reviewer-mongo Creating
+ fuseki The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+ Container capra-reviewer-mongo Created
+ Container capra-reviewer-loki Created
+ Container capra-reviewer-grafana Creating
+ Container capra-reviewer-fuseki Created
+ Container capra-reviewer-n8n Creating
+ Container capra-reviewer-n8n Created
+ Container capra-reviewer-grafana Created
+ Container capra-reviewer-fuseki Starting
+ Container capra-reviewer-loki Starting
+ Container capra-reviewer-mongo Starting
+ Container capra-reviewer-fuseki Started
+ Container capra-reviewer-mongo Started
+ Container capra-reviewer-mongo Waiting
+ Container capra-reviewer-fuseki Waiting
+ Container capra-reviewer-loki Started
+ Container capra-reviewer-grafana Starting
+ Container capra-reviewer-grafana Started
+ Container capra-reviewer-fuseki Healthy
+ Container capra-reviewer-mongo Healthy
+ Container capra-reviewer-n8n Starting
+ Container capra-reviewer-n8n Started
+NAME                     IMAGE                     COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+capra-reviewer-fuseki    stain/jena-fuseki:5.0.0   "/sbin/tini -- sh /d…"   fuseki    11 seconds ago   Up 11 seconds (healthy)   0.0.0.0:3031->3030/tcp, [::]:3031->3030/tcp
+capra-reviewer-grafana   grafana/grafana:11.2.0    "/run.sh"                grafana   11 seconds ago   Up 11 seconds             0.0.0.0:3002->3000/tcp, [::]:3002->3000/tcp
+capra-reviewer-loki      grafana/loki:3.1.1        "/usr/bin/loki -conf…"   loki      11 seconds ago   Up 11 seconds             0.0.0.0:3101->3100/tcp, [::]:3101->3100/tcp
+capra-reviewer-mongo     mongo:7                   "docker-entrypoint.s…"   mongo     11 seconds ago   Up 11 seconds (healthy)   0.0.0.0:27019->27017/tcp, [::]:27019->27017/tcp
+capra-reviewer-n8n       n8nio/n8n:2.6.4           "tini -- /docker-ent…"   n8n       11 seconds ago   Up Less than a second     0.0.0.0:5679->5678/tcp, [::]:5679->5678/tcp
+
+=== 5/8 Wait for services ===
+n8n ready
+fuseki ready
+loki ready
+grafana ready
+
+=== 6/8 Fuseki ontology dataset ===
+fuseki (restarted) ready
+local Fuseki access policy installed
+dataset 'ontology' already present
+seed triples loaded
+
+=== 7/8 Language model access ===
+endpoint not configured; no call attempted and none claimed.
+
+=== 8/8 Import workflow and credentials ===
+Error tracking disabled because this release is older than 6 weeks.
+Successfully imported 2 credentials.
+Error tracking disabled because this release is older than 6 weeks.
+Importing 1 workflows...
+Successfully imported 1 workflow.
+credential file removed from the host and from the container
+
+CAPRA reviewer route is up.
+
+  n8n editor      http://localhost:5679
+  Grafana         http://localhost:3002/d/capra-risk-register
+  Fuseki          http://localhost:3031
+  Loki            http://localhost:3101
+  Language model  OpenAI-compatible endpoint, model replace-with-your-model-name (NOT CONFIGURED; placeholders retained)
+
+Next: run ./reviewer/scripts/verify_route.sh, then open the n8n editor,
+complete the local owner sign-up (any email and password; it never leaves your
+machine), and follow reviewer/QUICKSTART.md from step 4.

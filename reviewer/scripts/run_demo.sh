@@ -3,7 +3,9 @@
 #
 # Activates the imported workflow for a bounded window, then deactivates it and
 # records what the run produced: per-collection document deltas, n8n execution
-# outcomes, and the log streams that reached Loki.
+# outcomes, the log streams that reached Loki, and which language-model provider
+# was bound. Endpoint runs and Ollama-fallback runs are separate populations and
+# are written to separate log files.
 #
 # Usage:
 #   ./reviewer/scripts/run_demo.sh                       # admissions, 10 minutes
@@ -30,10 +32,25 @@ done
 # shellcheck disable=SC1090
 set -a; . "$ENV_FILE"; set +a
 
+PROVIDER="${CAPRA_LLM_PROVIDER:-openai-compatible}"
+if [ "$PROVIDER" = "openai-compatible" ]; then
+  MODEL="${OPENAI_COMPATIBLE_MODEL:-replace-with-your-model-name}"
+  case "$MODEL" in
+    replace-with-*|"")
+      echo "The OpenAI-compatible endpoint is not configured in $ENV_FILE." >&2
+      echo "Set OPENAI_COMPATIBLE_BASE_URL, OPENAI_COMPATIBLE_API_KEY, and" >&2
+      echo "OPENAI_COMPATIBLE_MODEL and re-run bootstrap.sh, or switch to the" >&2
+      echo "Ollama fallback with 'bootstrap.sh --host-ollama'." >&2
+      exit 2 ;;
+  esac
+else
+  MODEL="${CAPRA_OLLAMA_MODEL:-${CAPRA_LLM_MODEL:-llama3.2}}"
+fi
+
 STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 LOG_DIR="$HERE/logs"
 mkdir -p "$LOG_DIR"
-RUN_LOG="$LOG_DIR/run_${DOMAIN}_${STAMP}.json"
+RUN_LOG="$LOG_DIR/run_${DOMAIN}_${PROVIDER}_${STAMP}.json"
 
 COLLECTIONS=(local_raw telemetry_raw enriched_telemetry_raw raw_ontology
   telemetry_transformation raw_scenarios scenario_simulation_results
@@ -56,16 +73,18 @@ exec_summary() {
   rm -f "$tmp"
 }
 
-echo "=== Regenerating the reviewer workflow for domain '$DOMAIN' ==="
+echo "=== Regenerating the reviewer workflow for domain '$DOMAIN' ($PROVIDER) ==="
 python3 "$HERE/scripts/make_reviewer_workflow.py" \
   --source "$REPO/workflows/CAPRA_Prototype_unified_patched.json" \
   --target "$HERE/workflows/CAPRA_reviewer_local.json" \
   --report "$HERE/workflows/transformation_report.json" \
-  --model "${CAPRA_LLM_MODEL:-llama3.2}" \
+  --provider "$PROVIDER" \
+  --model "$MODEL" \
   --domain "$DOMAIN"
 
-docker cp "$HERE/workflows/CAPRA_reviewer_local.json" capra-reviewer-n8n:/tmp/workflow.json
-docker exec capra-reviewer-n8n n8n import:workflow --input=/tmp/workflow.json >/dev/null 2>&1
+docker exec -i --user node capra-reviewer-n8n sh -c 'cat > /home/node/.capra-import-workflow.json' < "$HERE/workflows/CAPRA_reviewer_local.json"
+docker exec --user node capra-reviewer-n8n n8n import:workflow --input=/home/node/.capra-import-workflow.json >/dev/null 2>&1
+docker exec --user node capra-reviewer-n8n rm -f /home/node/.capra-import-workflow.json
 echo "workflow imported"
 
 if [ "$SEED_EVENTS" -gt 0 ]; then
@@ -113,9 +132,9 @@ LOKI_JOBS="$(curl -sG "http://localhost:${CAPRA_LOKI_PORT}/loki/api/v1/label/job
   --data-urlencode "end=$(date +%s)000000000" || echo '{}')"
 echo "$LOKI_JOBS"
 
-python3 - "$RUN_LOG" "$DOMAIN" "$START" "$END" "$BEFORE" "$AFTER" "$LOKI_JOBS" "$EXEC_SUMMARY" <<'PY'
+python3 - "$RUN_LOG" "$DOMAIN" "$START" "$END" "$BEFORE" "$AFTER" "$LOKI_JOBS" "$EXEC_SUMMARY" "$PROVIDER" "$MODEL" <<'PY'
 import json, sys
-path, domain, start, end, before, after, loki, execs = sys.argv[1:9]
+path, domain, start, end, before, after, loki, execs, provider, model = sys.argv[1:11]
 before_d, after_d = json.loads(before), json.loads(after)
 delta = {k: after_d.get(k, 0) - before_d.get(k, 0) for k in after_d}
 try:
@@ -124,6 +143,10 @@ except json.JSONDecodeError:
     loki_d = {"raw": loki}
 record = {
     "domain": domain,
+    # Recorded so that endpoint runs and Ollama-fallback runs stay separate
+    # populations and are never averaged together.
+    "llm_provider": provider,
+    "llm_model": model,
     "window_start_utc": start,
     "window_end_utc": end,
     "counts_before": before_d,

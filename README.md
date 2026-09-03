@@ -1,22 +1,46 @@
 # CAPRA Prototype
 
-**Context-Aware Privacy Risk Assessment (CAPRA)** — an n8n-based prototype of the six-layer reference architecture proposed in Grace Billiris's PhD Candidature Assessments 2 & 3.
+**Context-Aware Privacy Risk Assessment (CAPRA)** is an executable n8n
+prototype for examining privacy risks in multi-agent systems. It turns
+generated agent telemetry into contextual assertions, bounded risk inferences,
+refinement proposals, and a human-review step.
 
 CAPRA processes multi-agent telemetry through six layers — **DFL** (Data Federation), **CPL** (Context Processing), **CL** (Context Layer, the shared knowledge substrate), **RIL** (Risk Intelligence), **FRL** (Feedback & Refinement), **HIL** (Human Interaction) — to surface data-privacy risks in agentic AI systems that handle personally identifiable information (PII).
 
-> In the current prototype build, CL is materialised by the Apache Jena Fuseki ontology store that CPL reads and writes against, and FRL is the refinement portion of the Evaluation & Refinement Layer. Dashboard UIDs and Loki job names below therefore still carry the earlier prototype naming (`evalmain`, `evaluation_and_refinement_layer`).
+The repository includes:
 
-> ⚠️ **Research prototype.** Intended for reviewers reproducing the PhD evidence. Not production hardened.
+- a no-build Docker route for first-time users;
+- deterministic synthetic fixtures for university admissions, healthcare, and
+  retail;
+- a five-stage CAPRA workflow and human-review form;
+- local MongoDB, Fuseki, Loki, and Grafana services;
+- scripts that configure, run, verify, and clean up the demonstration; and
+- retained reports and evidence from earlier prototype campaigns.
+
+![CAPRA risk-assessment dashboard showing severity counts, temporal distribution, and per-risk details](dashboard_screenshots/RiskDashboard_20260731_101000.png)
+
+*Historical risk-dashboard capture from the reference prototype. The reviewer
+route provisions the same dashboard locally.*
+
+> In the current prototype build, CL is materialised by the Apache Jena Fuseki
+> ontology store that CPL reads and writes against, and FRL is the refinement
+> portion of the Evaluation & Refinement Layer. Dashboard UIDs and Loki job
+> names therefore retain the earlier prototype naming (`evalmain`,
+> `evaluation_and_refinement_layer`).
+
+> **Research prototype.** CAPRA is not production hardened. Its generated risk
+> inferences are research outputs for inspection, not validated privacy
+> assessments or automated compliance decisions.
 
 ---
 
 ## Table of contents
 
-1. [Repository layout](#repository-layout)
-2. [Architecture at a glance](#architecture-at-a-glance)
-3. [Quick start (local, macOS/Linux)](#quick-start-local-macoslinux)
-4. [Full setup on another machine](#full-setup-on-another-machine)
-5. [Reproducing the Beta iteration evidence](#reproducing-the-beta-iteration-evidence)
+1. [Try CAPRA](#try-capra)
+2. [Example instantiation: university admissions](#example-instantiation-university-admissions)
+3. [Architecture at a glance](#architecture-at-a-glance)
+4. [Repository layout](#repository-layout)
+5. [Historical setup and evidence](#historical-setup-and-evidence)
 6. [Grafana dashboards](#grafana-dashboards)
 7. [Troubleshooting](#troubleshooting)
 8. [Iteration status](#iteration-status)
@@ -26,16 +50,143 @@ CAPRA processes multi-agent telemetry through six layers — **DFL** (Data Feder
 
 ---
 
-## Repository layout
+## Try CAPRA
 
-| Path | Contents |
-|---|---|
-| `workflows/` | n8n workflow JSON exports. **Import `CAPRA_Prototype_unified_patched.json` first** — it contains the full six-layer pipeline used for the Beta evidence. The per-layer JSONs (`Data Federation Layer.json`, `Context Processing Layer.json`, `Mock External System pushing Telemetry Data.json`, `2026.02.02 (WIP) Risk Intelligence Layer OG.json`) are earlier per-layer exports kept for lineage. |
-| `n8n_snippets/` | Code-node snippets used inside the workflow. `RIL_Formatting_for_Grafana_patched.js` is the deterministic severity-mapping formatter; `Extract_Data_for_Graph_DB_patched.js` is the hardened SPARQL sanitiser; `format_risk_for_grafana.js` is the earlier revision retained for lineage. |
-| `dashboards/` | Grafana dashboard JSON (`risk_register.json` — CAPRA — Risk Dashboard, uid `capra-risk-register`) plus `install_risk_register_dashboard.js`, a browser-console installer used when a service-account token is not available. |
-| `dashboard_screenshots/` | PNGs captured for each of the prototype layers plus the aggregate view (Beta final state, 15 Jun 2026) and the Risk Dashboard (26 Jul 2026). Sources for Figures 5.1–5.7 in the CA3 report. |
-| `test_artefacts/` | Test plan (`01`), populated DSRM evaluation (`02`), evidence helpers (`03`, `04`, `05`, `06`), test-run findings log (`07`), comparative analysis (`08`), results write-up (`09`), Grafana fixes (`10`, `11`, `12`), per-layer reports (`13`–`17`), all-layers report (`18`), DSRM evaluation report (`19`), reproduction guide (`20`), CA3 §5.2 snippet (`21`), results matrix, recording instructions. |
-| `docs/` | Supplementary docs (this file plus `docs/SETUP.md` for the long-form setup). |
+The reviewer route builds nothing from source. Docker starts n8n, MongoDB,
+Fuseki, Loki, and Grafana, while one script configures the workflow and its
+credentials.
+
+### Requirements
+
+- Docker Engine with Compose v2
+- Python 3.9 or newer
+- `curl`
+- approximately 4 GB of free disk space and 6 GB allocated to Docker
+- either an OpenAI-compatible endpoint, or
+  [Ollama](https://ollama.com) for the local fallback
+
+### 1. Clone and configure
+
+```bash
+git clone https://github.com/gracebilliris/capra-prototype.git
+cd capra-prototype
+cp reviewer/env.template reviewer/.env
+```
+
+The preferred route accepts any endpoint that implements the OpenAI
+chat-completions API. Edit `reviewer/.env` and replace these placeholders:
+
+```dotenv
+CAPRA_LLM_PROVIDER=openai-compatible
+OPENAI_COMPATIBLE_BASE_URL=https://replace.example/v1
+OPENAI_COMPATIBLE_API_KEY=replace-with-your-key
+OPENAI_COMPATIBLE_MODEL=replace-with-your-model-name
+```
+
+The file is git-ignored. The bootstrap imports the values into the local n8n
+credential store, so no credential wiring is required in the n8n editor.
+
+For a credential-free local fallback, set:
+
+```dotenv
+CAPRA_LLM_PROVIDER=ollama
+CAPRA_OLLAMA_MODEL=llama3.2
+```
+
+The fallback is verified with `llama3.2` only. Local models vary substantially
+in speed, instruction following, and structured-output reliability.
+
+### 2. Start and verify the stack
+
+Preferred endpoint route:
+
+```bash
+./reviewer/scripts/bootstrap.sh
+./reviewer/scripts/verify_route.sh
+```
+
+Local Ollama fallback on macOS:
+
+```bash
+ollama serve &  # omit if Ollama already runs as a service
+ollama pull llama3.2
+./reviewer/scripts/bootstrap.sh --host-ollama
+./reviewer/scripts/verify_route.sh
+```
+
+The verification script reports `ok`, `FAIL`, or `SKIP` for each service. A
+`SKIP` is never counted as a pass. The interfaces are:
+
+| Interface | URL | Purpose |
+|---|---|---|
+| n8n | <http://localhost:5679> | Inspect workflow branches and executions |
+| Grafana | <http://localhost:3002/d/capra-risk-register> | Inspect privacy-risk outputs |
+| Fuseki | <http://localhost:3031> | Inspect the shared Context Layer |
+| Loki | <http://localhost:3101> | Query stage logs through Grafana |
+
+### 3. Run an example
+
+```bash
+./reviewer/scripts/run_demo.sh --domain admissions --minutes 30
+```
+
+The command selects the synthetic university-admissions fixture, seeds twelve
+generated agent events, activates the workflow for the requested observation
+window, and records collection deltas, execution outcomes, and observed Loki
+labels in:
+
+```text
+reviewer/logs/run_admissions_<provider>_<timestamp>.json
+```
+
+Use `healthcare` or `retail` to exercise another fixture. Endpoint and Ollama
+runs are written to separate files and must be interpreted separately.
+
+For the complete first-run instructions, expected checks, alternative Ollama
+configuration, failure guidance, and clean-up commands, see
+[`reviewer/QUICKSTART.md`](reviewer/QUICKSTART.md).
+
+---
+
+## Example instantiation: university admissions
+
+The admissions fixture illustrates how the CAPRA framework is instantiated as
+an executable assessment path. It contains twelve wholly synthetic applicant
+records. The reviewer route's deterministic mock external-system seeder turns
+these records into generated agent telemetry; CAPRA then processes that
+telemetry through five executable stages over the shared Context Layer.
+
+| Stage | Example responsibility | Inspectable output |
+|---|---|---|
+| Federate (DFL) | Normalise generated admissions-agent events | `telemetry_raw` records with canonical `event_id` values |
+| Contextualise (CPL) | Add actor, purpose, data, and transmission context | contextual assertions and `prov:wasDerivedFrom` links |
+| Assess (RIL) | Construct scenarios and produce bounded risk inferences | scenario, simulation, scoring, and `risk_inference_results` records |
+| Refine (FRL) | Propose a change in response to an assessment | `evaluation_results` and `feedback_results` records |
+| Review (HIL) | Present the proposal for Approve or Reject input | an n8n form submission that resumes the waiting execution |
+
+A verified 30-minute run of the local `llama3.2` fallback produced records at
+the federation, contextualisation, assessment, and refinement stages:
+
+```json
+{
+  "telemetry_raw": 13,
+  "enriched_telemetry_raw": 7,
+  "raw_ontology": 5,
+  "risk_inference_results": 8,
+  "evaluation_results": 4,
+  "feedback_results": 7,
+  "revision_results": 0
+}
+```
+
+These are collection deltas from one fallback observation window, not
+benchmarks or reproductions of the paper's historical campaigns. The run did
+not submit the human-review form. CAPRA has not established complete
+same-event traversal, durable review-decision persistence, semantic
+correctness, privacy effectiveness, or regulatory compliance.
+
+The synthetic files and their schemas are documented in
+[`reviewer/fixtures/README.md`](reviewer/fixtures/README.md).
 
 ---
 
@@ -63,7 +214,8 @@ CAPRA processes multi-agent telemetry through six layers — **DFL** (Data Feder
         │
     [HIL] Human Interaction Layer  (two-stage n8n form)  ──►  reviewer  ──►  FRL
 
-  Observability: Grafana Cloud — per-layer dashboards + CAPRA — Risk Dashboard.
+  Observability: local Loki + Grafana on the reviewer route;
+                 Grafana Cloud in the historical reference stack.
 ```
 
 **Layer roles in one line each**
@@ -77,57 +229,33 @@ CAPRA processes multi-agent telemetry through six layers — **DFL** (Data Feder
 
 ---
 
-## Quick start (local, macOS/Linux)
+## Repository layout
 
-**Prerequisites:** Docker Desktop, `git`, an OpenAI-compatible LLM endpoint (Azure OpenAI in the reference build), a MongoDB Atlas free-tier cluster, a free Grafana Cloud stack.
-
-```bash
-# 1. Clone
-git clone https://github.com/gracebilliris/capra-prototype.git
-cd capra-prototype
-
-# 2. Bring up the runtime containers (n8n + Fuseki + Kafka + local Mongo helper)
-docker compose -f docs/docker-compose.yml up -d
-
-# 3. Open n8n and import the workflow
-open http://localhost:5678
-#   Settings → Import from file → workflows/CAPRA_Prototype_unified_patched.json
-
-# 4. Wire external credentials in n8n
-#   - MongoDB Atlas connection string  (used by 10 Mongo nodes)
-#   - Azure OpenAI endpoint + deployment names for Telemetry/Scenario/Evaluation models
-#   - Grafana Loki push credentials (username = numeric user id, password = glc_... token)
-
-# 5. Import the Risk Dashboard into your Grafana Cloud stack
-node dashboards/install_risk_register_dashboard.js   # browser-console installer
-#   or POST dashboards/risk_register.json to /api/dashboards/db with a glsa_* token
-```
-
-Once the workflow is imported, **activate the schedule triggers**. Each layer emits to Loki within 10–30 s.
-
-Full step-by-step (Fuseki bootstrap, Loki datasource, credential mapping, activation via SQL) lives in **`docs/SETUP.md`** and **`test_artefacts/20_Reproduction_Guide.md`**.
+| Path | Contents |
+|---|---|
+| `reviewer/` | No-build first-run route, synthetic fixtures, local service configuration, generated reviewer workflow, verification scripts, and detailed quick start. |
+| `workflows/` | Published n8n workflow exports. `CAPRA_Prototype_unified_patched.json` is the source from which the reviewer workflow is derived; the other exports are retained for lineage. |
+| `n8n_snippets/` | Code-node snippets used inside the workflow, including severity formatting and SPARQL sanitisation. |
+| `dashboards/` | Version-controlled Grafana risk-dashboard definition and installation helper. |
+| `dashboard_screenshots/` | Captures of each prototype layer, the aggregate view, and the risk dashboard. |
+| `test_artefacts/` | Historical test plans, reports, findings, evidence mappings, and results matrices. |
+| `evidence/` | Retained execution bundles and derived analysis outputs, each with its own scope and provenance record. |
+| `docs/` | Historical reference-stack setup and supplementary documentation. |
 
 ---
 
-## Full setup on another machine
+## Historical setup and evidence
 
-See **[`docs/SETUP.md`](docs/SETUP.md)** for a from-scratch guide covering:
+The route in [`docs/SETUP.md`](docs/SETUP.md) describes the reference stack
+used for the earlier evidence campaigns. It is retained for provenance, but it
+is **not the recommended first-run route and does not run as written**: it pins
+an n8n version that predates workflow node versions, references unprovisioned
+services, requires external credentials, and omits the original domain inputs.
+Use `reviewer/` to try the current beta package.
 
-1. Provisioning the external services (MongoDB Atlas, Grafana Cloud, Azure OpenAI)
-2. Bringing up n8n + Fuseki via Docker Compose
-3. Importing the workflow JSON and binding credentials
-4. Bootstrapping the Fuseki `ontology` dataset with the shipped seed triples
-5. Installing the six per-layer dashboards + the Risk Dashboard
-6. Activating the schedule triggers and verifying end-to-end health
-7. Running a per-domain test campaign (Student / Healthcare / Retail) with time-window filtering
-
-Total elapsed time on a fresh laptop: **~45–60 minutes** including provisioning the free-tier external accounts.
-
----
-
-## Reproducing the Beta iteration evidence
-
-For the CA3 report evidence exactly (Figures 5.1–5.7, Table 5.2), follow **`test_artefacts/20_Reproduction_Guide.md`**. It covers:
+The historical reproduction guide in
+[`test_artefacts/20_Reproduction_Guide.md`](test_artefacts/20_Reproduction_Guide.md)
+covers:
 
 - Boot order (Fuseki → Mongo → n8n → dashboards)
 - The three "always-success" metric-emitter fixes (CPL, HIL, FRL) — §6
@@ -135,7 +263,10 @@ For the CA3 report evidence exactly (Figures 5.1–5.7, Table 5.2), follow **`te
 - Per-layer verification queries — §5.2
 - Recovery procedures for the four documented infrastructure incidents — §4
 
-The per-layer test reports (`test_artefacts/13`–`17`) each contain their own reproduction steps, objectives, results and traceability.
+The per-layer test reports (`test_artefacts/13`–`17`) contain the original
+objectives, observations, and traceability records. The reviewer route uses new
+synthetic fixtures and a reviewer-selected model, so its outputs do not
+reproduce the historical campaign numbers.
 
 ---
 
@@ -157,6 +288,20 @@ The last dashboard's JSON is version-controlled in `dashboards/risk_register.jso
 
 ## Troubleshooting
 
+For the reviewer route, start with the complete failure table in
+[`reviewer/QUICKSTART.md`](reviewer/QUICKSTART.md#failure-guidance). Common
+first-run issues are:
+
+| Symptom | Likely cause | Action |
+|---|---|---|
+| Bootstrap stops before starting services | Endpoint placeholders remain in `reviewer/.env` | Supply the three endpoint values, use `--configure-only`, or select the Ollama fallback |
+| Endpoint verification reports `FAIL` | The base URL, key, network path, or `/models` support is incorrect | Recheck the endpoint documentation; if `/models` is unsupported, use the first agent execution as the live test |
+| A default port is already allocated | Another local service uses that port | Change the corresponding `CAPRA_*_PORT` value in `reviewer/.env` and rerun the bootstrap |
+| Risk-dashboard panels remain empty | No stage logs have reached Loki in the selected window | Confirm `verify_route.sh` reports Loki `ok`, then run a longer observation window |
+| Agent output cannot be parsed | The selected model did not return the requested structured JSON | Use a stronger structured-output model; this is common with small local models |
+
+The following diagnostics apply to the retained historical reference stack:
+
 | Symptom | Root cause | Fix |
 |---|---|---|
 | RIL executions error with `Connect to localhost:3030 refused` | Fuseki container down | `docker start context-processing-layer-prototype-fuseki-1` |
@@ -165,7 +310,8 @@ The last dashboard's JSON is version-controlled in `dashboards/risk_register.jso
 | Dashboard shows `domain=unknown` for all rows | CPL prompt does not propagate a `domain` label to RIL | Use time-window filtering per domain (documented behaviour — see `15_Layer_Report_RIL.md §12`) |
 | Workflow "active=1" in DB but doesn't fire | n8n reads active state from `workflow_history`, not `workflow_entity` | Restart the n8n container after any DB edit (`docker restart context-processing-layer-prototype-n8n-1`) |
 
-More detailed diagnostics in `test_artefacts/07_Test_Run_Findings.md`.
+More historical diagnostics are recorded in
+`test_artefacts/07_Test_Run_Findings.md`.
 
 ---
 

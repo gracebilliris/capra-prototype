@@ -1,5 +1,5 @@
 {
-  "name": "CAPRA Reviewer Route (local, credential-free, admissions)",
+  "name": "CAPRA Reviewer Route (admissions, openai-compatible)",
   "nodes": [
     {
       "parameters": {
@@ -2494,11 +2494,15 @@
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         880,
         1792
@@ -2506,19 +2510,23 @@
       "id": "8b9e4577-6745-4f13-adef-d5a3c54ff112",
       "name": "Azure OpenAI Telemetry Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1648,
         1856
@@ -2526,19 +2534,23 @@
       "id": "94221c0c-397b-499b-b375-3bb924bc649e",
       "name": "Azure OpenAI Ontology Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         2352,
         1840
@@ -2546,19 +2558,23 @@
       "id": "d5132fa5-5a2f-4713-98f7-f3056090bfe5",
       "name": "Azure OpenAI Transformation Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         896,
         1264
@@ -2566,19 +2582,23 @@
       "id": "d144371b-ceb0-438d-b55f-15d0e058e5a8",
       "name": "Azure OpenAI Normalisation Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1296,
         80
@@ -2586,19 +2606,23 @@
       "id": "f5dfd7ea-44b6-433c-945b-6eba197ccef2",
       "name": "Azure OpenAI Data Intake Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1680,
         80
@@ -2606,19 +2630,23 @@
       "id": "a13d0222-0317-4cfe-8e65-5b871765316e",
       "name": "Azure OpenAI Schema Understanding Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1344,
         2672
@@ -2626,19 +2654,23 @@
       "id": "93199aea-3133-4a7e-9b99-426e5bb36084",
       "name": "Azure OpenAI Scenario Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         2352,
         2672
@@ -2646,19 +2678,23 @@
       "id": "5c6bf811-11e7-4fd6-ae3a-939143847a0b",
       "name": "Azure OpenAI Simulation Orchestration Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         3360,
         2448
@@ -2666,19 +2702,23 @@
       "id": "2d40c2db-6bdc-4f41-863a-dcac70247385",
       "name": "Azure OpenAI Simulation Model 1",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         3376,
         2832
@@ -2686,19 +2726,23 @@
       "id": "b023b2a6-414f-450f-934e-ade25bae3108",
       "name": "Azure OpenAI Simulation Model 2",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         4368,
         2672
@@ -2706,19 +2750,23 @@
       "id": "f4f853a3-76c6-4978-8e07-773550470ad5",
       "name": "Azure OpenAI Inference Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         672,
         3296
@@ -2726,19 +2774,23 @@
       "id": "258b404f-4ae9-4fcc-b94a-69a5c731aef1",
       "name": "Azure OpenAI Evaluation Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1648,
         3312
@@ -2746,19 +2798,23 @@
       "id": "e1986830-ff97-4479-b549-bf4a424e4f19",
       "name": "Azure OpenAI Feedback & Refinement Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1408,
         4336
@@ -2766,19 +2822,23 @@
       "id": "069129f2-675c-4c6a-911f-12acc18cc407",
       "name": "Azure OpenAI Feedback to Action Translation Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         848,
         5568
@@ -2786,9 +2846,9 @@
       "id": "d80d6632-3c2f-498d-a283-b4dd761122b6",
       "name": "Azure OpenAI Summary Model",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
@@ -2957,11 +3017,15 @@
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1296,
         -512
@@ -2969,19 +3033,23 @@
       "id": "79d28cb5-068f-4006-a48d-914abaebffa4",
       "name": "Azure OpenAI Data Intake Model1",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1680,
         -512
@@ -2989,9 +3057,9 @@
       "id": "3c2a8920-5231-4f6e-a797-b45c4c612bcc",
       "name": "Azure OpenAI Schema Understanding Model1",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
@@ -3160,11 +3228,15 @@
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1280,
         656
@@ -3172,19 +3244,23 @@
       "id": "b061b0ab-964e-4fd0-a635-dff99d9f4658",
       "name": "Azure OpenAI Data Intake Model2",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },
     {
       "parameters": {
-        "model": "llama3.2",
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "replace-with-your-model-name"
+        },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
       "position": [
         1664,
         656
@@ -3192,9 +3268,9 @@
       "id": "1bdc6ccc-3908-46c7-812f-b458c6727720",
       "name": "Azure OpenAI Schema Understanding Model2",
       "credentials": {
-        "ollamaApi": {
-          "id": "capra-local-ollama",
-          "name": "CAPRA Local Ollama"
+        "openAiApi": {
+          "id": "capra-openai-compatible",
+          "name": "CAPRA OpenAI-Compatible Endpoint"
         }
       }
     },

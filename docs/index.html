@@ -37,6 +37,16 @@
   header.hero p.lede{
     margin:8px 0 0; font-size:18px; color:#cfd9e6; max-width:640px;
   }
+  .hero-actions{display:flex; flex-wrap:wrap; gap:12px; margin-top:16px}
+  .button{
+    display:inline-flex; align-items:center; justify-content:center;
+    min-height:44px; padding:10px 17px; border-radius:8px;
+    background:var(--paper); color:var(--navy); font-weight:700;
+    border:1px solid var(--paper);
+  }
+  .button:hover{background:var(--soft); color:var(--navy); text-decoration:none}
+  .button.secondary{background:transparent; color:var(--paper); border-color:#8fa8c3}
+  .button.secondary:hover{background:rgba(255,255,255,.1); color:var(--paper)}
 
   section{padding:32px 0}
   section h2{
@@ -103,6 +113,33 @@
   .layer .n{font-size:15px; color:var(--ink); margin-bottom:4px}
   .layer .d{font-size:13px; color:var(--slate)}
 
+  .quick-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:20px; align-items:start}
+  .panel{
+    border:1px solid var(--line); border-radius:12px; padding:22px;
+    background:var(--paper); box-shadow:0 1px 2px var(--shadow);
+  }
+  .panel h3{margin:0 0 10px; font-size:20px}
+  .panel p{color:var(--slate); margin:0 0 14px}
+  pre{
+    margin:12px 0; padding:16px; overflow:auto; border-radius:9px;
+    background:#071426; color:#e9f2ff; font-size:13px; line-height:1.55;
+    border:1px solid #20344d;
+  }
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  .note{
+    border-left:4px solid var(--midblue); background:var(--soft);
+    color:var(--slate); padding:13px 15px; border-radius:0 8px 8px 0;
+    font-size:14px; margin-top:16px;
+  }
+  .flow{display:grid; gap:9px; margin-top:14px}
+  .flow-row{
+    display:grid; grid-template-columns:108px 1fr; gap:12px;
+    padding:10px 0; border-bottom:1px solid var(--line);
+  }
+  .flow-row:last-child{border-bottom:0}
+  .flow-row strong{color:var(--navy)}
+  .flow-row span{color:var(--slate); font-size:14px}
+
   .featured-publication{
     border:1px solid var(--sky); border-left:5px solid var(--midblue);
     border-radius:12px; background:var(--soft); padding:24px; margin:22px 0 28px;
@@ -129,8 +166,10 @@
 
   @media (max-width:640px){
     header.hero h1{font-size:32px}
-    .stack{grid-template-columns:1fr}
+    .stack,.quick-grid{grid-template-columns:1fr}
     .card{grid-template-columns:1fr}
+    .flow-row{grid-template-columns:1fr; gap:2px}
+    .hero-actions{flex-direction:column; align-items:stretch}
   }
 </style>
 </head>
@@ -140,7 +179,11 @@
   <div class="wrap">
     <div class="eyebrow">PhD prototype showcase</div>
     <h1>CAPRA</h1>
-    <p class="lede">A Context-Aware Privacy Risk Assessment framework that turns live system telemetry into calibrated privacy-risk scores, with a human reviewer in the loop and a learning feedback path.</p>
+    <p class="lede">A Context-Aware Privacy Risk Assessment framework, implemented as an executable prototype, that connects agent telemetry, contextual reasoning, bounded risk inferences, proposed refinement, and human review.</p>
+    <div class="hero-actions">
+      <a class="button" href="#try-capra">Try the beta prototype</a>
+      <a class="button secondary" href="https://github.com/gracebilliris/capra-prototype">View the repository</a>
+    </div>
   </div>
 </header>
 
@@ -154,7 +197,7 @@
       <div class="num">1</div>
       <div class="body">
         <h3>Research project outline</h3>
-        <p>The research question, gap, and contributions in seven slides — under two minutes.</p>
+        <p>The research question, gap, and contributions in seven slides.</p>
         <div class="video-embed">
           <iframe src="https://www.youtube.com/embed/qF8jjyez0Ss?rel=0" title="CAPRA — Research Outline" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
         </div>
@@ -178,41 +221,86 @@
       <div class="num">3</div>
       <div class="body">
         <h3>Prototype repository</h3>
-        <p>The full CAPRA prototype — n8n workflows, domain models for healthcare, retail, and student admission, dashboards, and reproducible test artefacts. Clone it and run the same three-domain evaluation locally.</p>
+        <p>The CAPRA prototype includes n8n workflows, deterministic synthetic fixtures for healthcare, retail, and university admissions, local infrastructure, dashboards, and retained test evidence. The beta route lets a reviewer exercise the same five-stage structure without building source code.</p>
         <div style="margin-top:14px">
           <a class="cta" href="https://github.com/gracebilliris/capra-prototype">Open on GitHub →</a>
+          <a class="cta secondary" href="https://github.com/gracebilliris/capra-prototype/blob/main/reviewer/QUICKSTART.md">Read the quick start</a>
         </div>
       </div>
     </article>
   </section>
 
+  <section id="try-capra">
+    <h2>Try the beta prototype</h2>
+    <div class="quick-grid">
+      <div class="panel">
+        <h3>Start the no-build reviewer route</h3>
+        <p>Docker provisions n8n, MongoDB, Fuseki, Loki, and Grafana. Supply one generic OpenAI-compatible endpoint, or select the local <code>llama3.2</code> fallback.</p>
+        <pre><code>git clone https://github.com/gracebilliris/capra-prototype.git
+cd capra-prototype
+cp reviewer/env.template reviewer/.env
+
+# Add your endpoint values to reviewer/.env, then:
+./reviewer/scripts/bootstrap.sh
+./reviewer/scripts/verify_route.sh
+./reviewer/scripts/run_demo.sh --domain admissions --minutes 30</code></pre>
+        <p>For the credential-free fallback, set <code>CAPRA_LLM_PROVIDER=ollama</code> and follow the host or container instructions in the quick start.</p>
+        <a class="cta" href="https://github.com/gracebilliris/capra-prototype/blob/main/reviewer/QUICKSTART.md">Open complete instructions →</a>
+      </div>
+
+      <div class="panel">
+        <h3>What opens locally</h3>
+        <div class="flow">
+          <div class="flow-row"><strong>n8n</strong><span><code>localhost:5679</code> · workflow and executions</span></div>
+          <div class="flow-row"><strong>Grafana</strong><span><code>localhost:3002</code> · privacy-risk dashboard</span></div>
+          <div class="flow-row"><strong>Fuseki</strong><span><code>localhost:3031</code> · shared Context Layer</span></div>
+          <div class="flow-row"><strong>Loki</strong><span><code>localhost:3101</code> · stage logs queried through Grafana</span></div>
+        </div>
+        <div class="note">The endpoint route is provider-neutral. Credentials stay in a git-ignored local environment file and are imported into the local n8n credential store. No browser-based credential wiring is required.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Example instantiation · university admissions</h2>
+    <p style="color:var(--slate)">The admissions example uses twelve deterministic synthetic applicant records. A mock external-system seeder turns them into generated agent telemetry, which the CAPRA prototype processes through five executable stages over the shared Context Layer.</p>
+    <div class="flow">
+      <div class="flow-row"><strong>Federate</strong><span>Normalise generated events into <code>telemetry_raw</code> records with canonical event identifiers.</span></div>
+      <div class="flow-row"><strong>Contextualise</strong><span>Add actor, purpose, data, and transmission context, with immediate provenance links.</span></div>
+      <div class="flow-row"><strong>Assess</strong><span>Construct scenarios and store bounded risk inferences for reviewer inspection.</span></div>
+      <div class="flow-row"><strong>Refine</strong><span>Prepare proposed changes with an action, target, rationale, and expected effect.</span></div>
+      <div class="flow-row"><strong>Review</strong><span>Present an Approve or Reject form that resumes the waiting n8n execution.</span></div>
+    </div>
+    <div class="note">A verified local-fallback window produced records through refinement. It did not submit the review form. This example demonstrates stage-level operation, not complete same-event traversal, durable decision persistence, semantic correctness, privacy effectiveness, or regulatory compliance.</div>
+  </section>
+
   <section>
     <h2>The framework at a glance</h2>
     <div class="stack">
-      <div class="layer"><div class="k">1 · DFL</div><div class="n">Data Federation Layer</div><div class="d">Normalises heterogeneous telemetry into a common event record.</div></div>
-      <div class="layer"><div class="k">3 · CPL</div><div class="n">Context Processing Layer</div><div class="d">Enriches events with contextual metadata from the domain model.</div></div>
-      <div class="layer"><div class="k">2 · CL</div><div class="n">Context Layer</div><div class="d">Central knowledge store; the interaction hub for all other layers.</div></div>
-      <div class="layer"><div class="k">4 · RIL</div><div class="n">Risk Intelligence Layer</div><div class="d">Assigns a severity score from the enriched context.</div></div>
-      <div class="layer"><div class="k">5 · FRL</div><div class="n">Feedback &amp; Refinement Layer</div><div class="d">Learns from assessment outcomes and reviewer decisions.</div></div>
-      <div class="layer human"><div class="k">6 · HIL</div><div class="n">Human Interaction Layer</div><div class="d">Presents cases to a human reviewer and captures their evaluation.</div></div>
+      <div class="layer"><div class="k">DFL</div><div class="n">Data Federation Layer</div><div class="d">Normalises heterogeneous telemetry into a common event record.</div></div>
+      <div class="layer"><div class="k">CPL</div><div class="n">Context Processing Layer</div><div class="d">Enriches events with contextual metadata from the domain model.</div></div>
+      <div class="layer"><div class="k">CL</div><div class="n">Context Layer</div><div class="d">Central knowledge store; the interaction hub for all other layers.</div></div>
+      <div class="layer"><div class="k">RIL</div><div class="n">Risk Intelligence Layer</div><div class="d">Produces bounded risk inferences from contextual records and a privacy-risk vocabulary.</div></div>
+      <div class="layer"><div class="k">FRL</div><div class="n">Feedback &amp; Refinement Layer</div><div class="d">Prepares proposed refinements for human consideration.</div></div>
+      <div class="layer human"><div class="k">HIL</div><div class="n">Human Interaction Layer</div><div class="d">Presents proposals to a human reviewer and accepts Approve or Reject input.</div></div>
     </div>
   </section>
 
   <section>
     <h2>Architecture in motion</h2>
-    <p style="color:var(--slate)">One event traced through the full stack — External Systems → DFL → CL → CPL → CL → RIL → CL → RIL → FRL → CL → FRL → HIL → Human → HIL → FRL → CL. Real workflow, sped up for playback.</p>
+    <p style="color:var(--slate)">The animation illustrates CAPRA's designed processing path from an external source through federation, contextualisation, assessment, refinement, and human review. It shows the implemented workflow structure rather than an empirically verified same-event trace across every store.</p>
     <figure style="margin:22px 0 0">
-      <img src="assets/prototype_e2e.gif" alt="Animated end-to-end trace of a single event through the six CAPRA layers"
+      <img src="assets/prototype_e2e.gif" alt="Animated illustration of CAPRA's designed processing path through its six architectural layers"
            style="width:100%; height:auto; display:block; border-radius:10px; border:1px solid var(--line); background:#fff" loading="lazy" />
       <figcaption style="color:var(--slate); font-size:13px; margin-top:10px; text-align:center">
-        Numbers correspond to layer badges on the framework diagram: 0 External Systems · 1 DFL · 2 Context Layer · 3 CPL · 4 RIL · 5 FRL · 6 HIL · 7 Human reviewer.
+        The animation retains the implementation labels used when the reference workflow was captured.
       </figcaption>
     </figure>
   </section>
 
   <section>
     <h2>Domains evaluated</h2>
-    <p style="color:var(--slate)">CAPRA has been evaluated in three domains sharing the same six-layer architecture; only the domain model in the Context Layer changes.</p>
+    <p style="color:var(--slate)">Historical campaigns exercised higher-education, healthcare, and retail inputs through the same CAPRA architecture. Domain-classified records were confirmed through risk assessment, with shared refinement output in aligned observation windows. The beta route provides new deterministic synthetic fixtures for these domains.</p>
     <div class="stack">
       <div class="layer"><div class="k">Healthcare</div><div class="d">Clinicians, records, treatment vs. curiosity — special-category health data.</div></div>
       <div class="layer"><div class="k">Retail</div><div class="d">Customer profiles, loyalty accounts, third-party sharing risk.</div></div>

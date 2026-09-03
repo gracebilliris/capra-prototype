@@ -1,10 +1,14 @@
 {
   "source": "/Users/gracebilliris/Projects/capra-prototype/workflows/CAPRA_Prototype_unified_patched.json",
   "target": "/Users/gracebilliris/Projects/capra-prototype/reviewer/workflows/CAPRA_reviewer_local.json",
-  "model": "llama3.2",
+  "provider": "openai-compatible",
+  "model": "replace-with-your-model-name",
+  "model_is_placeholder": true,
   "domain": "admissions",
   "node_count": 168,
   "change_count": 71,
+  "secrets_in_workflow": false,
+  "secret_scan": "no base URL, API key, account name, or vendor host is written to the workflow or this report; endpoint values live only in the n8n credential store",
   "changes": [
     {
       "node": "Find documents",
@@ -64,7 +68,7 @@
       "action": "slowed-cadence",
       "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 5}]}",
       "to": "every 60s",
-      "reason": "a local language model cannot sustain the published ten-second cadence"
+      "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume"
     },
     {
       "node": "get",
@@ -252,133 +256,163 @@
       "action": "slowed-cadence",
       "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
       "to": "every 60s",
-      "reason": "a local language model cannot sustain the published ten-second cadence"
+      "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume"
     },
     {
       "node": "Execute RIL",
       "action": "slowed-cadence",
       "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
       "to": "every 60s",
-      "reason": "a local language model cannot sustain the published ten-second cadence"
+      "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume"
     },
     {
       "node": "Execute E&RL",
       "action": "slowed-cadence",
       "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
       "to": "every 60s",
-      "reason": "a local language model cannot sustain the published ten-second cadence"
+      "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume"
     },
     {
       "node": "Execute DFL",
       "action": "slowed-cadence",
       "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
       "to": "every 60s",
-      "reason": "a local language model cannot sustain the published ten-second cadence"
+      "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume"
     },
     {
       "node": "Azure OpenAI Telemetry Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Ontology Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Transformation Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Normalisation Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Data Intake Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Schema Understanding Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Scenario Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Simulation Orchestration Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Simulation Model 1",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Simulation Model 2",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Inference Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Evaluation Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Feedback & Refinement Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Feedback to Action Translation Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Summary Model",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Insert Events to Local DB1",
@@ -391,15 +425,19 @@
       "node": "Azure OpenAI Data Intake Model1",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Schema Understanding Model1",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Insert Events to Local DB2",
@@ -412,15 +450,19 @@
       "node": "Azure OpenAI Data Intake Model2",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Azure OpenAI Schema Understanding Model2",
       "action": "retargeted-model",
       "from": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
-      "to": "@n8n/n8n-nodes-langchain.lmChatOllama",
-      "model": "llama3.2"
+      "to": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "provider": "openai-compatible",
+      "model": "replace-with-your-model-name",
+      "note": "the base URL and API key travel on the n8n credential, not in this file"
     },
     {
       "node": "Read retaildata",
@@ -439,14 +481,14 @@
       "action": "slowed-cadence",
       "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
       "to": "every 300s",
-      "reason": "a local language model cannot sustain the published ten-second cadence"
+      "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume"
     },
     {
       "node": "Execute ESL EHR Data",
       "action": "slowed-cadence",
       "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
       "to": "every 300s",
-      "reason": "a local language model cannot sustain the published ten-second cadence"
+      "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume"
     },
     {
       "node": "Execute ESL EHR Data",
@@ -458,7 +500,7 @@
       "action": "slowed-cadence",
       "from": "{\"interval\": [{\"field\": \"seconds\", \"secondsInterval\": 10}]}",
       "to": "every 300s",
-      "reason": "a local language model cannot sustain the published ten-second cadence"
+      "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume"
     },
     {
       "node": "Execute ESL Retail Data",

@@ -1,0 +1,68 @@
+{
+  "domain": "admissions",
+  "llm_provider": "ollama",
+  "llm_model": "llama3.2",
+  "window_start_utc": "2026-09-03T04:35:36Z",
+  "window_end_utc": "2026-09-03T05:08:30Z",
+  "counts_before": {
+    "local_raw": 12,
+    "telemetry_raw": 0,
+    "enriched_telemetry_raw": 0,
+    "raw_ontology": 0,
+    "telemetry_transformation": 0,
+    "raw_scenarios": 0,
+    "scenario_simulation_results": 0,
+    "orchestration_agent_scenarios": 0,
+    "contextual_scoring": 0,
+    "risk_inference_results": 0,
+    "evaluation_results": 0,
+    "feedback_results": 0,
+    "revision_results": 0
+  },
+  "counts_after": {
+    "local_raw": 12,
+    "telemetry_raw": 5,
+    "enriched_telemetry_raw": 5,
+    "raw_ontology": 2,
+    "telemetry_transformation": 0,
+    "raw_scenarios": 7,
+    "scenario_simulation_results": 6,
+    "orchestration_agent_scenarios": 6,
+    "contextual_scoring": 3,
+    "risk_inference_results": 5,
+    "evaluation_results": 2,
+    "feedback_results": 5,
+    "revision_results": 0
+  },
+  "counts_delta": {
+    "local_raw": 0,
+    "telemetry_raw": 5,
+    "enriched_telemetry_raw": 5,
+    "raw_ontology": 2,
+    "telemetry_transformation": 0,
+    "raw_scenarios": 7,
+    "scenario_simulation_results": 6,
+    "orchestration_agent_scenarios": 6,
+    "contextual_scoring": 3,
+    "risk_inference_results": 5,
+    "evaluation_results": 2,
+    "feedback_results": 5,
+    "revision_results": 0
+  },
+  "loki_job_labels": [
+    "data_federation_layer",
+    "evaluation_and_refinement_layer",
+    "risk_intelligence_layer"
+  ],
+  "n8n_executions": {
+    "total": 33,
+    "by_status": {
+      "success": 20,
+      "crashed": 5,
+      "error": 3,
+      "running": 5
+    },
+    "window_start": "2026-09-03 04:35:36",
+    "with_start_and_stop": 28
+  }
+}

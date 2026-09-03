@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # CAPRA reviewer route — health check.
 #
-# Prints one line per component. Every line must read 'ok' before you run an
-# observation window.
+# Prints one line per component. Statuses are exact:
+#
+#   ok    the check ran and passed
+#   FAIL  the check ran and failed
+#   SKIP  the check could not run, and nothing is claimed either way
+#
+# A SKIP is never counted as a pass. In particular, the generic
+# OpenAI-compatible endpoint is reported SKIP while reviewer/.env still holds
+# placeholders: this script does not fabricate a successful endpoint check.
 
 set -uo pipefail
 
@@ -16,12 +23,18 @@ fi
 # shellcheck disable=SC1090
 set -a; . "$ENV_FILE"; set +a
 
+PROVIDER="${CAPRA_LLM_PROVIDER:-openai-compatible}"
 FAILURES=0
+SKIPPED=0
 
 report() {
   local label="$1" status="$2" detail="${3:-}"
-  printf '%-28s %-4s %s\n' "$label" "$status" "$detail"
-  [ "$status" = "ok" ] || FAILURES=$((FAILURES + 1))
+  printf '%-28s %-5s %s\n' "$label" "$status" "$detail"
+  case "$status" in
+    ok) ;;
+    SKIP) SKIPPED=$((SKIPPED + 1)) ;;
+    *) FAILURES=$((FAILURES + 1)) ;;
+  esac
 }
 
 check_http() {
@@ -57,13 +70,48 @@ else
   report "mongodb" "FAIL" "ping failed"
 fi
 
-MODEL="${CAPRA_LLM_MODEL:-llama3.2}"
-if docker exec capra-reviewer-n8n sh -c \
-    "wget -q -O - http://ollama:11434/api/tags 2>/dev/null || wget -q -O - http://host.docker.internal:11434/api/tags 2>/dev/null" \
-    2>/dev/null | grep -q "$MODEL"; then
-  report "language model" "ok" "$MODEL reachable from n8n"
+# ---------------------------------------------------------------------------
+# Language model
+# ---------------------------------------------------------------------------
+is_placeholder() {
+  case "${1:-}" in
+    ""|*replace.example*|replace-with-*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+if [ "$PROVIDER" = "openai-compatible" ]; then
+  if is_placeholder "${OPENAI_COMPATIBLE_BASE_URL:-}" \
+     || is_placeholder "${OPENAI_COMPATIBLE_API_KEY:-}" \
+     || is_placeholder "${OPENAI_COMPATIBLE_MODEL:-}"; then
+    report "llm endpoint" "SKIP" "not configured; placeholders still in reviewer/.env"
+  elif docker exec -e CAPRA_KEY="$OPENAI_COMPATIBLE_API_KEY" \
+         -e CAPRA_BASE="$OPENAI_COMPATIBLE_BASE_URL" capra-reviewer-n8n \
+         sh -c 'wget -q -O /dev/null --header="Authorization: Bearer $CAPRA_KEY" "$CAPRA_BASE/models"' 2>/dev/null; then
+    report "llm endpoint" "ok" "${OPENAI_COMPATIBLE_BASE_URL}/models reachable from n8n"
+  else
+    report "llm endpoint" "FAIL" "${OPENAI_COMPATIBLE_BASE_URL}/models not reachable from n8n"
+  fi
+
+  # Confirms the credential exists by id. Deliberately NOT --decrypted: the
+  # check must never move the reviewer's key through a pipe or a log.
+  if docker exec capra-reviewer-n8n sh -c \
+      'n8n export:credentials --all --output=/home/node/.capra-cred-check.json >/dev/null 2>&1 \
+       && grep -q capra-openai-compatible /home/node/.capra-cred-check.json; \
+       rc=$?; rm -f /home/node/.capra-cred-check.json; exit $rc' 2>/dev/null; then
+    report "llm credential" "ok" "CAPRA OpenAI-Compatible Endpoint imported (encrypted at rest)"
+  else
+    report "llm credential" "FAIL" "not present; run bootstrap.sh step 8"
+  fi
 else
-  report "language model" "FAIL" "$MODEL not reachable from the n8n container"
+  MODEL="${CAPRA_OLLAMA_MODEL:-${CAPRA_LLM_MODEL:-llama3.2}}"
+  if docker exec capra-reviewer-n8n sh -c \
+      "wget -q -O - http://ollama:11434/api/tags 2>/dev/null || wget -q -O - http://host.docker.internal:11434/api/tags 2>/dev/null" \
+      2>/dev/null | grep -q "$MODEL"; then
+    report "llm fallback (ollama)" "ok" "$MODEL reachable from n8n"
+  else
+    report "llm fallback (ollama)" "FAIL" "$MODEL not reachable from the n8n container"
+  fi
 fi
 
 if docker exec capra-reviewer-n8n n8n list:workflow 2>/dev/null | grep -q "capra-reviewer-local"; then
@@ -72,10 +120,28 @@ else
   report "workflow imported" "FAIL" "run bootstrap.sh step 8"
 fi
 
-echo
-if [ "$FAILURES" -eq 0 ]; then
-  echo "All checks passed. Run ./reviewer/scripts/run_demo.sh next."
+if [ -f "$HERE/workflows/transformation_report.json" ]; then
+  BOUND="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("provider","?"))' \
+    "$HERE/workflows/transformation_report.json" 2>/dev/null)"
+  if [ "$BOUND" = "$PROVIDER" ]; then
+    report "workflow provider" "ok" "$BOUND matches reviewer/.env"
+  else
+    report "workflow provider" "FAIL" "workflow built for '$BOUND', .env selects '$PROVIDER'; re-run bootstrap.sh"
+  fi
 else
-  echo "$FAILURES check(s) failed. See reviewer/QUICKSTART.md, Failure guidance."
+  report "workflow provider" "FAIL" "transformation report missing"
+fi
+
+echo
+if [ "$FAILURES" -eq 0 ] && [ "$SKIPPED" -eq 0 ]; then
+  echo "All checks passed. Run ./reviewer/scripts/run_demo.sh next."
+elif [ "$FAILURES" -eq 0 ]; then
+  echo "$SKIPPED check(s) SKIPPED and nothing was assumed about them; every check that"
+  echo "could run passed. The stack is correctly configured, but the language-model"
+  echo "endpoint has NOT been verified, so the workflow cannot yet complete a stage."
+  echo "Configure the endpoint in reviewer/.env, or use the Ollama fallback."
+  exit 3
+else
+  echo "$FAILURES check(s) failed, $SKIPPED skipped. See reviewer/QUICKSTART.md, Failure guidance."
   exit 1
 fi

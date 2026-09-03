@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Derive the credential-free reviewer workflow from the published export.
+"""Derive the reviewer workflow from the published export.
 
 Input:  workflows/CAPRA_Prototype_unified_patched.json  (the tagged release export)
 Output: reviewer/workflows/CAPRA_reviewer_local.json
@@ -8,9 +8,23 @@ The transformation is mechanical and auditable. It changes only the external
 bindings that a reviewer cannot supply without accounts, and it changes no
 stage logic, prompt, or code node:
 
-1.  Azure OpenAI chat-model nodes become Ollama chat-model nodes bound to the
-    local ``ollama`` service. Agent nodes, prompts, and output parsers are
-    untouched.
+1.  Azure OpenAI chat-model nodes are retargeted at the language-model provider
+    the reviewer selected. Two providers are supported and neither is
+    Azure-specific:
+
+    * ``openai-compatible`` (default, and the route the quick start prefers):
+      generic OpenAI Chat Model nodes bound to one n8n credential that carries
+      the reviewer's own base URL, API key, and model name. Any endpoint that
+      speaks the OpenAI chat-completions API works; nothing in this file names
+      a vendor, a host, or a key.
+    * ``ollama``: Ollama chat-model nodes bound to a local Ollama runtime.
+      Credential-free, but small local models vary widely in instruction
+      following and structured-output reliability.
+
+    Agent nodes, prompts, and output parsers are untouched in both cases. No
+    endpoint, key, or account value is ever written into the workflow file: the
+    reviewer's values live only in the n8n credential store, which the
+    bootstrap populates from the git-ignored ``reviewer/.env``.
 2.  All MongoDB credential references collapse onto one local MongoDB
     credential pointing at the ``capra`` database in the local ``mongo``
     service.
@@ -40,6 +54,7 @@ from __future__ import annotations
 import argparse
 import json
 import pathlib
+import re
 import sys
 
 SOURCE_DEFAULT = "workflows/CAPRA_Prototype_unified_patched.json"
@@ -48,10 +63,39 @@ REPORT_DEFAULT = "reviewer/workflows/transformation_report.json"
 
 LOCAL_MONGO_CREDENTIAL = {"id": "capra-local-mongo", "name": "CAPRA Local Mongo"}
 LOCAL_OLLAMA_CREDENTIAL = {"id": "capra-local-ollama", "name": "CAPRA Local Ollama"}
+OPENAI_COMPATIBLE_CREDENTIAL = {
+    "id": "capra-openai-compatible",
+    "name": "CAPRA OpenAI-Compatible Endpoint",
+}
 
 AZURE_MODEL_TYPE = "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi"
 OLLAMA_MODEL_TYPE = "@n8n/n8n-nodes-langchain.lmChatOllama"
 OLLAMA_MODEL_VERSION = 1
+# Generic "OpenAI Chat Model" node. It is not tied to api.openai.com: the base
+# URL travels on the openAiApi credential, so any OpenAI-compatible endpoint is
+# addressable. Version 1.2 is the lowest version in n8n 2.6.4 that takes the
+# model as a resource locator, which lets an arbitrary model id be supplied
+# without the editor trying to resolve it against a vendor model list.
+OPENAI_COMPATIBLE_MODEL_TYPE = "@n8n/n8n-nodes-langchain.lmChatOpenAi"
+OPENAI_COMPATIBLE_MODEL_VERSION = 1.2
+
+PROVIDERS = ("openai-compatible", "ollama")
+DEFAULT_MODEL = {
+    # Deliberately not a real model id. The bootstrap replaces it from
+    # reviewer/.env, and an unreplaced value must fail loudly rather than
+    # silently address someone else's account.
+    "openai-compatible": "replace-with-your-model-name",
+    "ollama": "llama3.2",
+}
+
+# Anything matching these must never reach the workflow file, the report, or a
+# log. The reviewer's key lives only in the n8n credential store.
+SECRET_PATTERNS = (
+    re.compile(r"sk-[A-Za-z0-9_\-]{16,}"),
+    re.compile(r"(?i)\bapi[_-]?key\b\s*[:=]\s*[\"']?[A-Za-z0-9_\-]{16,}"),
+    re.compile(r"(?i)\bbearer\s+[A-Za-z0-9_\-\.]{16,}"),
+    re.compile(r"(?i)[a-z0-9-]+\.openai\.azure\.com"),
+)
 
 LOKI_LOCAL_URL = "http://loki:3100/loki/api/v1/push"
 FUSEKI_UPDATE_URL = "http://fuseki:3030/ontology/update"
@@ -73,10 +117,11 @@ DOMAIN_TRIGGERS = {
 }
 
 # The published export polls every ten seconds, which assumes a hosted
-# GPT-4o-class endpoint answering in a second or two. A small local model takes
-# minutes per agent call, so a ten-second cadence starts new executions faster
-# than the previous ones finish and nothing reaches the downstream stages. The
-# reviewer route slows each trigger to a cadence a local model can sustain.
+# GPT-4o-class endpoint answering in a second or two, and it assumes nobody is
+# watching the bill. A ten-second cadence starts new executions faster than a
+# slower endpoint or a local model finishes them, so nothing reaches the
+# downstream stages. The reviewer route slows every trigger to a cadence that
+# both providers sustain and that keeps a metered endpoint's call volume small.
 TRIGGER_CADENCE_SECONDS = {
     "Execute ESL Admission Data": 300,
     "Execute ESL EHR Data": 300,
@@ -137,7 +182,11 @@ const graph = Array.isArray(__raw)
   : (Array.isArray(__raw['@graph']) ? __raw['@graph'].map(__expandNode) : [__expandNode(__raw)]);"""
 
 
-def transform(workflow: dict, model: str, domain: str) -> tuple[dict, list[dict]]:
+def transform(
+    workflow: dict, model: str, domain: str, provider: str
+) -> tuple[dict, list[dict]]:
+    if provider not in PROVIDERS:
+        raise ValueError(f"unknown provider: {provider}")
     changes: list[dict] = []
     kept_nodes = []
     removed_names = set()
@@ -165,7 +214,7 @@ def transform(workflow: dict, model: str, domain: str) -> tuple[dict, list[dict]
                 "action": "slowed-cadence",
                 "from": previous,
                 "to": f"every {seconds}s",
-                "reason": "a local language model cannot sustain the published ten-second cadence",
+                "reason": "the published ten-second cadence outruns any endpoint the reviewer is likely to use, and inflates metered call volume",
             })
 
         if name in inactive_triggers:
@@ -186,16 +235,35 @@ def transform(workflow: dict, model: str, domain: str) -> tuple[dict, list[dict]
             continue
 
         if node_type == AZURE_MODEL_TYPE:
-            node["type"] = OLLAMA_MODEL_TYPE
-            node["typeVersion"] = OLLAMA_MODEL_VERSION
-            node["parameters"] = {"model": model, "options": {}}
-            node["credentials"] = {"ollamaApi": dict(LOCAL_OLLAMA_CREDENTIAL)}
+            if provider == "ollama":
+                node["type"] = OLLAMA_MODEL_TYPE
+                node["typeVersion"] = OLLAMA_MODEL_VERSION
+                node["parameters"] = {"model": model, "options": {}}
+                node["credentials"] = {"ollamaApi": dict(LOCAL_OLLAMA_CREDENTIAL)}
+                target_type = OLLAMA_MODEL_TYPE
+            else:
+                node["type"] = OPENAI_COMPATIBLE_MODEL_TYPE
+                node["typeVersion"] = OPENAI_COMPATIBLE_MODEL_VERSION
+                node["parameters"] = {
+                    "model": {"__rl": True, "mode": "id", "value": model},
+                    "options": {},
+                }
+                node["credentials"] = {
+                    "openAiApi": dict(OPENAI_COMPATIBLE_CREDENTIAL)
+                }
+                target_type = OPENAI_COMPATIBLE_MODEL_TYPE
             changes.append({
                 "node": name,
                 "action": "retargeted-model",
                 "from": AZURE_MODEL_TYPE,
-                "to": OLLAMA_MODEL_TYPE,
+                "to": target_type,
+                "provider": provider,
                 "model": model,
+                "note": (
+                    "the base URL and API key travel on the n8n credential, not in this file"
+                    if provider == "openai-compatible"
+                    else "local runtime; no key of any kind"
+                ),
             })
             kept_nodes.append(node)
             continue
@@ -284,11 +352,22 @@ def transform(workflow: dict, model: str, domain: str) -> tuple[dict, list[dict]
                         continue
                     branch[:] = [c for c in branch if c.get("node") not in removed_names]
 
-    workflow["name"] = f"CAPRA Reviewer Route (local, credential-free, {domain})"
+    workflow["name"] = f"CAPRA Reviewer Route ({domain}, {provider})"
     workflow["id"] = "capra-reviewer-local"
     workflow.pop("versionId", None)
     workflow["active"] = False
     return workflow, changes
+
+
+def scan_for_secrets(text: str, label: str) -> None:
+    """Abort rather than write a file that carries credential-shaped material."""
+    for pattern in SECRET_PATTERNS:
+        match = pattern.search(text)
+        if match:
+            raise SystemExit(
+                f"refusing to write {label}: it matched a secret pattern "
+                f"({pattern.pattern}) at offset {match.start()}"
+            )
 
 
 def main() -> int:
@@ -296,9 +375,23 @@ def main() -> int:
     parser.add_argument("--source", default=SOURCE_DEFAULT)
     parser.add_argument("--target", default=TARGET_DEFAULT)
     parser.add_argument("--report", default=REPORT_DEFAULT)
-    parser.add_argument("--model", default="llama3.2")
+    parser.add_argument(
+        "--provider",
+        default="openai-compatible",
+        choices=sorted(PROVIDERS),
+        help="language-model binding: a generic OpenAI-compatible endpoint "
+             "(default) or a local Ollama runtime",
+    )
+    parser.add_argument(
+        "--model",
+        default=None,
+        help="model name to request. Defaults to the provider's placeholder "
+             "or local default; supply the model your endpoint exposes.",
+    )
     parser.add_argument("--domain", default="admissions", choices=sorted(DOMAIN_TRIGGERS))
     args = parser.parse_args()
+
+    model = args.model or DEFAULT_MODEL[args.provider]
 
     source = pathlib.Path(args.source)
     if not source.exists():
@@ -306,29 +399,38 @@ def main() -> int:
         return 1
 
     workflow = json.loads(source.read_text(encoding="utf-8"))
-    workflow, changes = transform(workflow, args.model, args.domain)
+    workflow, changes = transform(workflow, model, args.domain, args.provider)
 
     target = pathlib.Path(args.target)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(workflow, indent=2) + "\n", encoding="utf-8")
+    serialised = json.dumps(workflow, indent=2) + "\n"
+    scan_for_secrets(serialised, str(target))
+    target.write_text(serialised, encoding="utf-8")
 
     report = pathlib.Path(args.report)
-    report.write_text(
+    report_text = (
         json.dumps(
             {
                 "source": str(source),
                 "target": str(target),
-                "model": args.model,
+                "provider": args.provider,
+                "model": model,
+                "model_is_placeholder": model == DEFAULT_MODEL["openai-compatible"],
                 "domain": args.domain,
                 "node_count": len(workflow["nodes"]),
                 "change_count": len(changes),
+                "secrets_in_workflow": False,
+                "secret_scan": "no base URL, API key, account name, or vendor host "
+                               "is written to the workflow or this report; endpoint "
+                               "values live only in the n8n credential store",
                 "changes": changes,
             },
             indent=2,
         )
-        + "\n",
-        encoding="utf-8",
+        + "\n"
     )
+    scan_for_secrets(report_text, str(report))
+    report.write_text(report_text, encoding="utf-8")
 
     remaining = sorted({
         credential_type
@@ -336,6 +438,7 @@ def main() -> int:
         for credential_type in (node.get("credentials") or {})
     })
     print(f"wrote {target} ({len(workflow['nodes'])} nodes, {len(changes)} changes)")
+    print(f"provider: {args.provider}, model: {model}")
     print(f"remaining credential types: {remaining}")
     return 0
 
