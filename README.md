@@ -156,6 +156,12 @@ records. The reviewer route's deterministic mock external-system seeder turns
 these records into generated agent telemetry; CAPRA then processes that
 telemetry through five executable stages over the shared Context Layer.
 
+![CAPRA reference architecture lifecycle showing Federate, Contextualise, Assess, and Adapt with human oversight](docs/assets/capra-reference-architecture.png)
+
+*CAPRA reference architecture lifecycle. The admissions prototype instantiates
+this lifecycle as the five executable stages below over the shared Context
+Layer.*
+
 | Stage | Example responsibility | Inspectable output |
 |---|---|---|
 | Federate (DFL) | Normalise generated admissions-agent events | `telemetry_raw` records with canonical `event_id` values |

@@ -102,6 +102,16 @@
   }
   .diagram img{max-width:100%; display:block; margin:0 auto; border-radius:6px}
   .diagram .caption{color:var(--muted); font-size:13px; margin-top:10px; text-align:center}
+  .reference-architecture{
+    margin:24px 0; padding:18px; border:1px solid var(--line);
+    border-radius:12px; background:var(--paper);
+  }
+  .reference-architecture img{
+    width:100%; height:auto; display:block; margin:0 auto;
+  }
+  .reference-architecture figcaption{
+    color:var(--slate); font-size:13px; margin-top:14px; text-align:center;
+  }
 
   .stack{display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px}
   .layer{
@@ -264,6 +274,17 @@ cp reviewer/env.template reviewer/.env
   <section>
     <h2>Example instantiation · university admissions</h2>
     <p style="color:var(--slate)">The admissions example uses twelve deterministic synthetic applicant records. A mock external-system seeder turns them into generated agent telemetry, which the CAPRA prototype processes through five executable stages over the shared Context Layer.</p>
+    <figure class="reference-architecture">
+      <img
+        src="assets/capra-reference-architecture.png"
+        alt="CAPRA reference architecture lifecycle showing Federate, Contextualise, Assess, and Adapt connected by data, context, assessment, and refinement flows, with human oversight informing adaptation"
+        width="1042"
+        height="622"
+      />
+      <figcaption>
+        CAPRA reference architecture lifecycle. The admissions prototype instantiates this lifecycle as the five executable stages below over the shared Context Layer.
+      </figcaption>
+    </figure>
     <div class="flow">
       <div class="flow-row"><strong>Federate</strong><span>Normalise generated events into <code>telemetry_raw</code> records with canonical event identifiers.</span></div>
       <div class="flow-row"><strong>Contextualise</strong><span>Add actor, purpose, data, and transmission context, with immediate provenance links.</span></div>
