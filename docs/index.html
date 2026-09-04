@@ -123,6 +123,47 @@
   .layer .n{font-size:15px; color:var(--ink); margin-bottom:4px}
   .layer .d{font-size:13px; color:var(--slate)}
 
+  .architecture-explorer{margin-top:20px}
+  .layer-tabs{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:10px;
+    margin-bottom:14px;
+  }
+  .layer-tab{
+    appearance:none; width:100%; border:1px solid var(--line);
+    border-radius:10px; padding:14px; background:var(--paper);
+    color:var(--ink); text-align:left; cursor:pointer;
+    transition:border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+  }
+  .layer-tab:hover{border-color:var(--sky); transform:translateY(-1px)}
+  .layer-tab:focus-visible{outline:3px solid var(--sky); outline-offset:2px}
+  .layer-tab[aria-selected="true"]{
+    border-color:var(--midblue); background:var(--soft);
+    box-shadow:inset 0 0 0 1px var(--midblue);
+  }
+  .layer-tab .code{
+    display:block; color:var(--midblue); font-size:12px; font-weight:700;
+    letter-spacing:.1em; margin-bottom:3px;
+  }
+  .layer-tab .name{display:block; font-weight:650; line-height:1.3}
+  .layer-panel{
+    border:1px solid var(--line); border-radius:12px; padding:24px;
+    background:linear-gradient(135deg,var(--soft),var(--paper));
+  }
+  .layer-panel[hidden]{display:none}
+  .layer-panel h3{margin:0 0 8px; font-size:22px}
+  .layer-panel > p{margin:0 0 18px; color:var(--slate)}
+  .layer-detail-grid{
+    display:grid; grid-template-columns:repeat(3,1fr); gap:16px;
+  }
+  .layer-detail-grid div{
+    border-top:2px solid var(--sky); padding-top:10px;
+  }
+  .layer-detail-grid strong{
+    display:block; color:var(--navy); font-size:12px;
+    letter-spacing:.08em; text-transform:uppercase; margin-bottom:5px;
+  }
+  .layer-detail-grid span{color:var(--slate); font-size:14px}
+
   .quick-grid{display:grid; grid-template-columns:1.05fr .95fr; gap:20px; align-items:start}
   .panel{
     border:1px solid var(--line); border-radius:12px; padding:22px;
@@ -177,9 +218,16 @@
   @media (max-width:640px){
     header.hero h1{font-size:32px}
     .stack,.quick-grid{grid-template-columns:1fr}
+    .layer-tabs{grid-template-columns:repeat(2,1fr)}
+    .layer-detail-grid{grid-template-columns:1fr}
     .card{grid-template-columns:1fr}
     .flow-row{grid-template-columns:1fr; gap:2px}
     .hero-actions{flex-direction:column; align-items:stretch}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    .layer-tab{transition:none}
+    .layer-tab:hover{transform:none}
   }
 </style>
 </head>
@@ -240,6 +288,99 @@
     </article>
   </section>
 
+  <section>
+    <h2>Example instantiation · university admissions</h2>
+    <p style="color:var(--slate)">The admissions example uses twelve deterministic synthetic applicant records. A mock external-system seeder turns them into generated agent telemetry, which the CAPRA prototype processes through five executable stages over the shared Context Layer.</p>
+    <figure class="reference-architecture">
+      <img
+        src="assets/capra-reference-architecture.png"
+        alt="CAPRA reference architecture lifecycle showing Federate, Contextualise, Assess, and Adapt connected by data, context, assessment, and refinement flows, with human oversight informing adaptation"
+        width="1042"
+        height="622"
+      />
+      <figcaption>
+        CAPRA reference architecture lifecycle. The admissions prototype instantiates this lifecycle as the five executable stages below over the shared Context Layer.
+      </figcaption>
+    </figure>
+    <div class="flow">
+      <div class="flow-row"><strong>Federate</strong><span>Normalise generated events into <code>telemetry_raw</code> records with canonical event identifiers.</span></div>
+      <div class="flow-row"><strong>Contextualise</strong><span>Add actor, purpose, data, and transmission context, with immediate provenance links.</span></div>
+      <div class="flow-row"><strong>Assess</strong><span>Construct scenarios and store bounded risk inferences for reviewer inspection.</span></div>
+      <div class="flow-row"><strong>Refine</strong><span>Prepare proposed changes with an action, target, rationale, and expected effect.</span></div>
+      <div class="flow-row"><strong>Review</strong><span>Present an Approve or Reject form that resumes the waiting n8n execution.</span></div>
+    </div>
+    <div class="note">A verified local-fallback window produced records through refinement. It did not submit the review form. This example demonstrates stage-level operation, not complete same-event traversal, durable decision persistence, semantic correctness, privacy effectiveness, or regulatory compliance.</div>
+  </section>
+
+  <section>
+    <h2>The framework at a glance</h2>
+    <p style="color:var(--slate)">Select a layer to inspect its role, the information it receives, and the output it contributes to the CAPRA assessment path.</p>
+    <div class="architecture-explorer">
+      <div class="layer-tabs" role="tablist" aria-label="CAPRA architecture layers">
+        <button class="layer-tab" id="tab-dfl" role="tab" aria-selected="true" aria-controls="panel-dfl" tabindex="0"><span class="code">DFL</span><span class="name">Data Federation</span></button>
+        <button class="layer-tab" id="tab-cpl" role="tab" aria-selected="false" aria-controls="panel-cpl" tabindex="-1"><span class="code">CPL</span><span class="name">Context Processing</span></button>
+        <button class="layer-tab" id="tab-cl" role="tab" aria-selected="false" aria-controls="panel-cl" tabindex="-1"><span class="code">CL</span><span class="name">Context Layer</span></button>
+        <button class="layer-tab" id="tab-ril" role="tab" aria-selected="false" aria-controls="panel-ril" tabindex="-1"><span class="code">RIL</span><span class="name">Risk Intelligence</span></button>
+        <button class="layer-tab" id="tab-frl" role="tab" aria-selected="false" aria-controls="panel-frl" tabindex="-1"><span class="code">FRL</span><span class="name">Feedback &amp; Refinement</span></button>
+        <button class="layer-tab" id="tab-hil" role="tab" aria-selected="false" aria-controls="panel-hil" tabindex="-1"><span class="code">HIL</span><span class="name">Human Interaction</span></button>
+      </div>
+      <div class="layer-panels">
+        <article class="layer-panel" id="panel-dfl" role="tabpanel" aria-labelledby="tab-dfl">
+          <h3>Data Federation Layer</h3>
+          <p>Observes heterogeneous telemetry, events, and PII flows from external multi-agent systems and normalises them into a common event record.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Generated agent events and source-system telemetry.</span></div><div><strong>Contributes</strong><span>Canonical records with stable event identifiers.</span></div><div><strong>Prototype evidence</strong><span><code>telemetry_raw</code> records in MongoDB.</span></div></div>
+        </article>
+        <article class="layer-panel" id="panel-cpl" role="tabpanel" aria-labelledby="tab-cpl" hidden>
+          <h3>Context Processing Layer</h3>
+          <p>Enriches federated events with semantic context so later reasoning can account for actors, purposes, data categories, transmission, and domain conditions.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Canonical telemetry and domain knowledge.</span></div><div><strong>Contributes</strong><span>Contextual assertions linked to their source event.</span></div><div><strong>Prototype evidence</strong><span>Enriched telemetry and <code>prov:wasDerivedFrom</code> links.</span></div></div>
+        </article>
+        <article class="layer-panel" id="panel-cl" role="tabpanel" aria-labelledby="tab-cl" hidden>
+          <h3>Context Layer</h3>
+          <p>Acts as CAPRA's shared knowledge substrate, retaining domain concepts and the contextual state exchanged across the executable layers.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Context, assessment, and refinement assertions.</span></div><div><strong>Contributes</strong><span>A traceable knowledge base for cross-layer reasoning.</span></div><div><strong>Prototype evidence</strong><span>Ontology records queried through Apache Jena Fuseki.</span></div></div>
+        </article>
+        <article class="layer-panel" id="panel-ril" role="tabpanel" aria-labelledby="tab-ril" hidden>
+          <h3>Risk Intelligence Layer</h3>
+          <p>Constructs scenarios and produces bounded risk inferences from enriched context and the prototype's privacy-risk vocabulary.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Enriched events, domain context, and risk concepts.</span></div><div><strong>Contributes</strong><span>Severity-labelled inferences with supporting rationale.</span></div><div><strong>Prototype evidence</strong><span>Scenario, simulation, scoring, and <code>risk_inference_results</code> records.</span></div></div>
+        </article>
+        <article class="layer-panel" id="panel-frl" role="tabpanel" aria-labelledby="tab-frl" hidden>
+          <h3>Feedback &amp; Refinement Layer</h3>
+          <p>Transforms assessment outcomes into bounded refinement proposals for human consideration rather than changing the system autonomously.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Risk results and reviewer decisions.</span></div><div><strong>Contributes</strong><span>Proposed actions, targets, rationales, and expected effects.</span></div><div><strong>Prototype evidence</strong><span><code>evaluation_results</code> and <code>feedback_results</code> records.</span></div></div>
+        </article>
+        <article class="layer-panel" id="panel-hil" role="tabpanel" aria-labelledby="tab-hil" hidden>
+          <h3>Human Interaction Layer</h3>
+          <p>Presents refinement proposals to a human reviewer and captures an explicit approval or rejection decision.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>A proposed refinement and its supporting assessment.</span></div><div><strong>Contributes</strong><span>Human oversight and a recorded decision.</span></div><div><strong>Prototype evidence</strong><span>An Approve or Reject n8n form that resumes the waiting execution.</span></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Architecture in motion</h2>
+    <p style="color:var(--slate)">The animation illustrates CAPRA's designed processing path from an external source through federation, contextualisation, assessment, refinement, and human review. It shows the implemented workflow structure rather than an empirically verified same-event trace across every store.</p>
+    <figure style="margin:22px 0 0">
+      <img src="assets/prototype_e2e.gif" alt="Animated illustration of CAPRA's designed processing path through its six architectural layers"
+           style="width:100%; height:auto; display:block; border-radius:10px; border:1px solid var(--line); background:#fff" loading="lazy" />
+      <figcaption style="color:var(--slate); font-size:13px; margin-top:10px; text-align:center">
+        The animation retains the implementation labels used when the reference workflow was captured.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>Domains evaluated</h2>
+    <p style="color:var(--slate)">Historical campaigns exercised higher-education, healthcare, and retail inputs through the same CAPRA architecture. Domain-classified records were confirmed through risk assessment, with shared refinement output in aligned observation windows. The beta route provides new deterministic synthetic fixtures for these domains.</p>
+    <div class="stack">
+      <div class="layer"><div class="k">Healthcare</div><div class="d">Clinicians, records, treatment vs. curiosity — special-category health data.</div></div>
+      <div class="layer"><div class="k">Retail</div><div class="d">Customer profiles, loyalty accounts, third-party sharing risk.</div></div>
+      <div class="layer"><div class="k">Student admission</div><div class="d">Applications, transcripts, personal statements, reviewer workflows.</div></div>
+    </div>
+  </section>
+
   <section id="try-capra">
     <h2>Try the beta prototype</h2>
     <div class="quick-grid">
@@ -272,64 +413,6 @@ cp reviewer/env.template reviewer/.env
   </section>
 
   <section>
-    <h2>Example instantiation · university admissions</h2>
-    <p style="color:var(--slate)">The admissions example uses twelve deterministic synthetic applicant records. A mock external-system seeder turns them into generated agent telemetry, which the CAPRA prototype processes through five executable stages over the shared Context Layer.</p>
-    <figure class="reference-architecture">
-      <img
-        src="assets/capra-reference-architecture.png"
-        alt="CAPRA reference architecture lifecycle showing Federate, Contextualise, Assess, and Adapt connected by data, context, assessment, and refinement flows, with human oversight informing adaptation"
-        width="1042"
-        height="622"
-      />
-      <figcaption>
-        CAPRA reference architecture lifecycle. The admissions prototype instantiates this lifecycle as the five executable stages below over the shared Context Layer.
-      </figcaption>
-    </figure>
-    <div class="flow">
-      <div class="flow-row"><strong>Federate</strong><span>Normalise generated events into <code>telemetry_raw</code> records with canonical event identifiers.</span></div>
-      <div class="flow-row"><strong>Contextualise</strong><span>Add actor, purpose, data, and transmission context, with immediate provenance links.</span></div>
-      <div class="flow-row"><strong>Assess</strong><span>Construct scenarios and store bounded risk inferences for reviewer inspection.</span></div>
-      <div class="flow-row"><strong>Refine</strong><span>Prepare proposed changes with an action, target, rationale, and expected effect.</span></div>
-      <div class="flow-row"><strong>Review</strong><span>Present an Approve or Reject form that resumes the waiting n8n execution.</span></div>
-    </div>
-    <div class="note">A verified local-fallback window produced records through refinement. It did not submit the review form. This example demonstrates stage-level operation, not complete same-event traversal, durable decision persistence, semantic correctness, privacy effectiveness, or regulatory compliance.</div>
-  </section>
-
-  <section>
-    <h2>The framework at a glance</h2>
-    <div class="stack">
-      <div class="layer"><div class="k">DFL</div><div class="n">Data Federation Layer</div><div class="d">Normalises heterogeneous telemetry into a common event record.</div></div>
-      <div class="layer"><div class="k">CPL</div><div class="n">Context Processing Layer</div><div class="d">Enriches events with contextual metadata from the domain model.</div></div>
-      <div class="layer"><div class="k">CL</div><div class="n">Context Layer</div><div class="d">Central knowledge store; the interaction hub for all other layers.</div></div>
-      <div class="layer"><div class="k">RIL</div><div class="n">Risk Intelligence Layer</div><div class="d">Produces bounded risk inferences from contextual records and a privacy-risk vocabulary.</div></div>
-      <div class="layer"><div class="k">FRL</div><div class="n">Feedback &amp; Refinement Layer</div><div class="d">Prepares proposed refinements for human consideration.</div></div>
-      <div class="layer human"><div class="k">HIL</div><div class="n">Human Interaction Layer</div><div class="d">Presents proposals to a human reviewer and accepts Approve or Reject input.</div></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Architecture in motion</h2>
-    <p style="color:var(--slate)">The animation illustrates CAPRA's designed processing path from an external source through federation, contextualisation, assessment, refinement, and human review. It shows the implemented workflow structure rather than an empirically verified same-event trace across every store.</p>
-    <figure style="margin:22px 0 0">
-      <img src="assets/prototype_e2e.gif" alt="Animated illustration of CAPRA's designed processing path through its six architectural layers"
-           style="width:100%; height:auto; display:block; border-radius:10px; border:1px solid var(--line); background:#fff" loading="lazy" />
-      <figcaption style="color:var(--slate); font-size:13px; margin-top:10px; text-align:center">
-        The animation retains the implementation labels used when the reference workflow was captured.
-      </figcaption>
-    </figure>
-  </section>
-
-  <section>
-    <h2>Domains evaluated</h2>
-    <p style="color:var(--slate)">Historical campaigns exercised higher-education, healthcare, and retail inputs through the same CAPRA architecture. Domain-classified records were confirmed through risk assessment, with shared refinement output in aligned observation windows. The beta route provides new deterministic synthetic fixtures for these domains.</p>
-    <div class="stack">
-      <div class="layer"><div class="k">Healthcare</div><div class="d">Clinicians, records, treatment vs. curiosity — special-category health data.</div></div>
-      <div class="layer"><div class="k">Retail</div><div class="d">Customer profiles, loyalty accounts, third-party sharing risk.</div></div>
-      <div class="layer"><div class="k">Student admission</div><div class="d">Applications, transcripts, personal statements, reviewer workflows.</div></div>
-    </div>
-  </section>
-
-  <section>
     <h2>Related publications</h2>
     <p style="color:var(--slate)">Published peer-reviewed and preprint outputs that motivate, ground, or extend the CAPRA prototype.</p>
 
@@ -358,6 +441,39 @@ cp reviewer/env.template reviewer/.env
 <footer>
   CAPRA prototype showcase · <a href="https://github.com/gracebilliris/capra-prototype" style="color:inherit">github.com/gracebilliris/capra-prototype</a>
 </footer>
+
+<script>
+  (() => {
+    const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+    const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+    const activateTab = (tab, moveFocus = false) => {
+      tabs.forEach((item) => {
+        const selected = item === tab;
+        item.setAttribute('aria-selected', String(selected));
+        item.tabIndex = selected ? 0 : -1;
+      });
+      panels.forEach((panel) => {
+        panel.hidden = panel.id !== tab.getAttribute('aria-controls');
+      });
+      if (moveFocus) tab.focus();
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener('click', () => activateTab(tab));
+      tab.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        let nextIndex = index;
+        if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabs.length;
+        if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabs.length) % tabs.length;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = tabs.length - 1;
+        activateTab(tabs[nextIndex], true);
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
