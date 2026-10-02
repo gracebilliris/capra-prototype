@@ -239,13 +239,37 @@
     <h1>CAPRA</h1>
     <p class="lede">A Context-Aware Privacy Risk Assessment framework, implemented as an executable prototype, that connects agent telemetry, contextual reasoning, bounded risk inferences, proposed refinement, and human review.</p>
     <div class="hero-actions">
-      <a class="button" href="#try-capra">Try the beta prototype</a>
+      <a class="button" href="#gamma">Review Gamma</a>
       <a class="button secondary" href="https://github.com/gracebilliris/capra-prototype">View the repository</a>
     </div>
   </div>
 </header>
 
 <main class="wrap">
+
+  <section id="gamma">
+    <h2>Gamma · completed research iteration</h2>
+    <div class="quick-grid">
+      <div class="panel">
+        <h3>Survey-informed refinement</h3>
+        <p>Gamma is the completed, bounded research iteration of CAPRA. In the expert survey, 41 valid respondents assessed the framework: all 15 criterion items met the predefined consensus rule, with agreement from 82.9% to 97.6%. Feedback drove refinements to terminology, interfaces, context governance, human oversight, change governance, telemetry controls, and evidence visibility.</p>
+        <div class="note">The survey provides design feedback and consensus evidence. It is not described as framework validation or operational-effectiveness evidence.</div>
+      </div>
+      <div class="panel">
+        <h3>What Gamma implements</h3>
+        <p>Six conceptual layers remain: DFL, CPL, CL, RIL, FRL, and HIL. Five executable stages—Federate, Contextualise, Assess, Refine, and Review—operate over the shared Context Layer. External Systems remain outside CAPRA.</p>
+        <p>Governed Context Records retain provenance, purpose, candidate obligations, uncertainty, ownership, and validation state. Candidate obligations guide human review; they are not compliance findings.</p>
+        <a class="cta" href="https://github.com/gracebilliris/capra-prototype/blob/main/gamma/README.md">Review Gamma source and evidence →</a>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="flow-row"><strong>Human review</strong><span>Early context review supports Confirm, Correct, Reject, or Defer; post-assessment review records a durable decision linked to upstream evidence.</span></div>
+      <div class="flow-row"><strong>Change control</strong><span>Versioned schemas, mappings, criteria, models, prompts, and policies are selected through governed artefact records, with role separation, status history, application, and rollback.</span></div>
+      <div class="flow-row"><strong>Telemetry</strong><span>Allowlisting, redaction, role-gated detail, synthetic public views, configurable retention, legal hold, and deletion receipts demonstrate minimisation, access, and retention mechanics.</span></div>
+      <div class="flow-row"><strong>Evidence</strong><span>A deterministic synthetic admissions walkthrough retains source-to-review lineage and checksum-verifiable outputs. Twenty-five controlled positive and negative tests exercise the bounded profile.</span></div>
+    </div>
+    <div class="note"><strong>Claim boundary:</strong> Gamma does not establish semantic correctness, legal compliance or applicability, privacy effectiveness, operational reliability, or production readiness. Publication of the research artefact and this explanatory page does not make Gamma a deployed service or a production-ready software release.</div>
+  </section>
 
   <section>
     <h2>Five-part showcase</h2>
@@ -303,7 +327,7 @@
       <div class="num">5</div>
       <div class="body">
         <h3>Prototype repository</h3>
-        <p>The CAPRA prototype includes n8n workflows, deterministic synthetic fixtures for healthcare, retail, and university admissions, local infrastructure, dashboards, and retained test evidence. The beta route lets a reviewer exercise the same five-stage structure without building source code.</p>
+        <p>The repository includes the bounded Gamma implementation and its deterministic admissions evidence, plus historical Alpha/Beta workflows, synthetic domain fixtures, local infrastructure, dashboards, and retained test evidence. The Docker reviewer route remains Beta-era historical implementation evidence.</p>
         <div style="margin-top:14px">
           <a class="cta" href="https://github.com/gracebilliris/capra-prototype">Open on GitHub →</a>
           <a class="cta secondary" href="https://github.com/gracebilliris/capra-prototype/blob/main/reviewer/QUICKSTART.md">Read the quick start</a>
@@ -314,7 +338,7 @@
 
   <section>
     <h2>Example instantiation · university admissions</h2>
-    <p style="color:var(--slate)">The admissions example uses twelve deterministic synthetic applicant records. A mock external-system seeder turns them into generated agent telemetry, which the CAPRA prototype processes through five executable stages over the shared Context Layer.</p>
+    <p style="color:var(--slate)">Gamma's authoritative walkthrough uses a deterministic synthetic admissions event and retains a complete identifier-linked evidence chain through early context review, assessment, refinement, post-assessment review, application, and rollback. The historical Beta reviewer route separately uses twelve synthetic applicant records. The admissions fixtures are distinct from the retained <code>environmental_air_quality.csv</code> fixture used for an ad hoc Beta stress test.</p>
     <figure class="reference-architecture">
       <img
         src="assets/capra-reference-architecture.png"
@@ -333,12 +357,12 @@
       <div class="flow-row"><strong>Refine</strong><span>Prepare proposed changes with an action, target, rationale, and expected effect.</span></div>
       <div class="flow-row"><strong>Review</strong><span>Present an Approve or Reject form that resumes the waiting n8n execution.</span></div>
     </div>
-    <div class="note">A verified local-fallback window produced records through refinement. It did not submit the review form. This example demonstrates stage-level operation, not complete same-event traversal, durable decision persistence, semantic correctness, privacy effectiveness, or regulatory compliance.</div>
+    <div class="note">Gamma provides the deterministic complete admissions evidence chain described above. Separately, a historical Beta local-fallback window produced records through refinement but did not submit the review form. That Beta run remains stage-level historical evidence and is not a Gamma result.</div>
   </section>
 
   <section>
     <h2>The framework at a glance</h2>
-    <p style="color:var(--slate)">Select a layer to inspect its role, the information it receives, and the output it contributes to the CAPRA assessment path.</p>
+    <p style="color:var(--slate)">Select a layer to inspect its Gamma responsibility and the retained Beta implementation evidence. The layers are conceptual responsibilities; the five executable stages run over the shared Context Layer.</p>
     <div class="architecture-explorer">
       <div class="layer-tabs" role="tablist" aria-label="CAPRA architecture layers">
         <button class="layer-tab" id="tab-dfl" role="tab" aria-selected="true" aria-controls="panel-dfl" tabindex="0"><span class="code">DFL</span><span class="name">Data Federation</span></button>
@@ -351,33 +375,33 @@
       <div class="layer-panels">
         <article class="layer-panel" id="panel-dfl" role="tabpanel" aria-labelledby="tab-dfl">
           <h3>Data Federation Layer</h3>
-          <p>Observes heterogeneous telemetry, events, and PII flows from external multi-agent systems and normalises them into a common event record.</p>
-          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Generated agent events and source-system telemetry.</span></div><div><strong>Contributes</strong><span>Canonical records with stable event identifiers.</span></div><div><strong>Prototype evidence</strong><span><code>telemetry_raw</code> records in MongoDB.</span></div></div>
+          <p>Treats External Systems as outside CAPRA, validates their boundary records, and minimises admitted telemetry through allowlisting, redaction, and quarantine.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Untrusted generated events and source-system telemetry.</span></div><div><strong>Contributes</strong><span>Minimised canonical records with stable event identifiers.</span></div><div><strong>Historical Beta evidence</strong><span><code>telemetry_raw</code> records in MongoDB.</span></div></div>
         </article>
         <article class="layer-panel" id="panel-cpl" role="tabpanel" aria-labelledby="tab-cpl" hidden>
           <h3>Context Processing Layer</h3>
-          <p>Enriches federated events with semantic context so later reasoning can account for actors, purposes, data categories, transmission, and domain conditions.</p>
-          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Canonical telemetry and domain knowledge.</span></div><div><strong>Contributes</strong><span>Contextual assertions linked to their source event.</span></div><div><strong>Prototype evidence</strong><span>Enriched telemetry and <code>prov:wasDerivedFrom</code> links.</span></div></div>
+          <p>Enriches federated events with governed context so later reasoning can account for actors, purpose, candidate obligations, provenance, uncertainty, effective time, and domain conditions.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Canonical telemetry and approved mappings.</span></div><div><strong>Contributes</strong><span>Versioned contextual assertions linked to their source event.</span></div><div><strong>Historical Beta evidence</strong><span>Enriched telemetry and <code>prov:wasDerivedFrom</code> links.</span></div></div>
         </article>
         <article class="layer-panel" id="panel-cl" role="tabpanel" aria-labelledby="tab-cl" hidden>
           <h3>Context Layer</h3>
-          <p>Acts as CAPRA's shared knowledge substrate, retaining domain concepts and the contextual state exchanged across the executable layers.</p>
-          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Context, assessment, and refinement assertions.</span></div><div><strong>Contributes</strong><span>A traceable knowledge base for cross-layer reasoning.</span></div><div><strong>Prototype evidence</strong><span>Ontology records queried through Apache Jena Fuseki.</span></div></div>
+          <p>Acts as CAPRA's shared governed substrate, retaining versioned context, provenance, uncertainty, assessment, review, and refinement state across executable stages.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Context, assessment, review, and refinement assertions.</span></div><div><strong>Contributes</strong><span>Traceable state for cross-layer reasoning and change governance.</span></div><div><strong>Historical Beta evidence</strong><span>Ontology records queried through Apache Jena Fuseki.</span></div></div>
         </article>
         <article class="layer-panel" id="panel-ril" role="tabpanel" aria-labelledby="tab-ril" hidden>
           <h3>Risk Intelligence Layer</h3>
-          <p>Constructs scenarios and produces bounded risk inferences from enriched context and the prototype's privacy-risk vocabulary.</p>
-          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Enriched events, domain context, and risk concepts.</span></div><div><strong>Contributes</strong><span>Severity-labelled inferences with supporting rationale.</span></div><div><strong>Prototype evidence</strong><span>Scenario, simulation, scoring, and <code>risk_inference_results</code> records.</span></div></div>
+          <p>Produces bounded criteria observations from human-confirmed context and exact artefact versions. Candidate obligations remain review inputs, not compliance findings.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Confirmed context, approved mappings, criteria, and risk concepts.</span></div><div><strong>Contributes</strong><span>Review-required observations with rationale, uncertainty, and evidence.</span></div><div><strong>Historical Beta evidence</strong><span>Scenario, simulation, scoring, and <code>risk_inference_results</code> records.</span></div></div>
         </article>
         <article class="layer-panel" id="panel-frl" role="tabpanel" aria-labelledby="tab-frl" hidden>
           <h3>Feedback &amp; Refinement Layer</h3>
-          <p>Transforms assessment outcomes into bounded refinement proposals for human consideration rather than changing the system autonomously.</p>
-          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Risk results and reviewer decisions.</span></div><div><strong>Contributes</strong><span>Proposed actions, targets, rationales, and expected effects.</span></div><div><strong>Prototype evidence</strong><span><code>evaluation_results</code> and <code>feedback_results</code> records.</span></div></div>
+          <p>Transforms assessment outcomes into versioned proposals and keeps proposal, approval, application, and rollback distinct rather than changing the system autonomously.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Assessment outputs and durable reviewer decisions.</span></div><div><strong>Contributes</strong><span>Governed changes with status history, role separation, and rollback.</span></div><div><strong>Historical Beta evidence</strong><span><code>evaluation_results</code> and <code>feedback_results</code> records.</span></div></div>
         </article>
         <article class="layer-panel" id="panel-hil" role="tabpanel" aria-labelledby="tab-hil" hidden>
           <h3>Human Interaction Layer</h3>
-          <p>Presents refinement proposals to a human reviewer and captures an explicit approval or rejection decision.</p>
-          <div class="layer-detail-grid"><div><strong>Receives</strong><span>A proposed refinement and its supporting assessment.</span></div><div><strong>Contributes</strong><span>Human oversight and a recorded decision.</span></div><div><strong>Prototype evidence</strong><span>An Approve or Reject n8n form that resumes the waiting execution.</span></div></div>
+          <p>Provides early context review and post-assessment review. Context can be confirmed, corrected, rejected, or deferred; later decisions remain linked to upstream evidence.</p>
+          <div class="layer-detail-grid"><div><strong>Receives</strong><span>Context requiring review and proposals with supporting assessments.</span></div><div><strong>Contributes</strong><span>Durable human decisions, rationales, and linked input/output versions.</span></div><div><strong>Historical Beta evidence</strong><span>An Approve or Reject n8n form that resumes the waiting execution.</span></div></div>
         </article>
       </div>
     </div>
@@ -406,7 +430,7 @@
   </section>
 
   <section id="try-capra">
-    <h2>Try the beta prototype</h2>
+    <h2>Run the historical Beta reviewer route</h2>
     <div class="quick-grid">
       <div class="panel">
         <h3>Start the no-build reviewer route</h3>
