@@ -69,6 +69,7 @@ Historical Alpha/Beta reports remain historical evidence. Their metrics and
 the 20-case no-op stress package are not Gamma results; the latter supports
 trigger/instrumentation continuity only.
 
-These files describe the completed local Gamma research iteration. Editing
-repository and website source does not establish that Gamma has been publicly
-deployed or that a public release has been published.
+These files publish the completed Gamma research iteration as a bounded
+research artefact. Public repository availability does not mean that Gamma has
+been deployed as a service, adopted operationally, or issued as an immutable
+software release.
