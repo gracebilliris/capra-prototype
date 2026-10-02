@@ -1,0 +1,47 @@
+{
+  "application_status": "rolled_back",
+  "approval_time": "2026-10-02T10:00:00Z",
+  "approved_by": "reviewer-gamma-01",
+  "assessment_id": "assessment-26efadf1-ecca-591a-9105-92db1532f029",
+  "effective_at": "2026-10-02T10:00:00Z",
+  "evidence_refs": [
+    "assessment-manifest-0cbccd78-75f0-5eb2-a6bf-579f32a52929",
+    "risk-f3b14dc1-be98-5138-896b-947268dc7962"
+  ],
+  "impacted_contracts": [
+    "capra.gamma.contextualise.v1"
+  ],
+  "new_version": "mapping-admissions-purpose/1.1.0",
+  "origin_event_id": "origin-0bf8aeae-6e39-582c-a7a1-98879347852e",
+  "previous_version": "mapping-admissions-purpose/1.0.0",
+  "rationale": "Clarify the mapping rationale exposed to the reviewer.",
+  "requested_by": "analyst-gamma-01",
+  "reviewed_by": "reviewer-gamma-01",
+  "revision_id": "revision-81fec751-c7b5-5a17-a52f-356e8abd8956",
+  "risk_id": "risk-f3b14dc1-be98-5138-896b-947268dc7962",
+  "rollback_reason": "Exercise deterministic rollback while retaining immutable status history.",
+  "rollback_target": "mapping-admissions-purpose/1.0.0",
+  "status": "rolled_back",
+  "status_history": [
+    {
+      "actor": "analyst-gamma-01",
+      "at": "2026-10-02T10:00:00Z",
+      "status": "proposed"
+    },
+    {
+      "actor": "reviewer-gamma-01",
+      "at": "2026-10-02T10:00:00Z",
+      "status": "approved"
+    },
+    {
+      "actor": "admin-gamma-01",
+      "at": "2026-10-02T10:00:00Z",
+      "status": "applied"
+    },
+    {
+      "actor": "admin-gamma-01",
+      "at": "2026-10-02T10:00:00Z",
+      "status": "rolled_back"
+    }
+  ]
+}

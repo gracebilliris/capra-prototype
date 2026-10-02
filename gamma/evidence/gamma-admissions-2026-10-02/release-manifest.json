@@ -1,0 +1,60 @@
+{
+  "base_commit": "9510cc093e69c41d38cf10985f555d84ba47a31a",
+  "claim_boundaries": [
+    "research prototype only",
+    "no production-readiness claim",
+    "no legal-compliance or legal-validity claim",
+    "no privacy-effectiveness claim",
+    "no semantic-correctness claim",
+    "no operational-reliability claim"
+  ],
+  "evidence_files": {
+    "assessment-output.json": "273d8b9fdaae6f5e87e551515a738aa8693b09e23424e4fca2df1b3826209cc6",
+    "change-history.json": "18cb9ad29b47a4f6f2a965c1fc6ba586f13a2b7e8102b1ad9896d3752ab3dbe5",
+    "lineage-trace.json": "16b12d7567733c85ca1a85776c04465ce864041e806bdd0f6eaf1dbc2f9af5be",
+    "post-assessment-review.json": "5c2ca727caec2b45ea18075e59318201e7ea673dc8208caeaeae7a645e463be9",
+    "quarantine-log.json": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+    "redaction-log.json": "133b64016f66d39a27af90f6dd7da74e2e04da7c777926c34c57e4fe3e93ba57",
+    "source-event.json": "23e58a848d8ba51d4d0014ec2f7151c54a04196383f3fc3cb3f555edf0f3c8ea",
+    "stage-records.json": "7b4097512609a3bb34763ad04e32d4a1ef6c0c0c108b9d592327edafbc9c945b",
+    "validation-report.json": "d6549024e8aac83aa8284f473ce767c032b07d452d2fb62be52af55358e7617e"
+  },
+  "generated_at": "2026-10-02T10:00:00Z",
+  "iteration_label": "Gamma",
+  "release_id": "capra-gamma-2026-10-02",
+  "source_files": {
+    "gamma/README.md": "bdd73601a814388adf2b98a90cb4edd9775c54ce90aa8dad67fbd93c2f0eab89",
+    "gamma/capra_gamma.py": "a1295cea8627b4b64334773040394216064c9ffe30d604c04f1eab0d87f06abb",
+    "gamma/contracts/contracts.json": "60b8ba952aa49e6352e01b5f06152fd6fcaf8226d6cf0b45eb822a47636be8ce",
+    "gamma/contracts/schemas.json": "aea7fc38cfafa288e29ce6c41f781ef21c466e651adf1d7d09e1b416e9b67430",
+    "gamma/docs/TELEMETRY_THREAT_MODEL.md": "30718a400fd703bfb15632ff6d1561c33cb2c854e7f477b00f3b0850dd01f43b",
+    "gamma/docs/WORKED_SCENARIO.md": "5b6499f2becece394b6defed0618e9c0efde5198fc3b5aece14c115824e356b2",
+    "gamma/fixtures/admissions_event.json": "23e58a848d8ba51d4d0014ec2f7151c54a04196383f3fc3cb3f555edf0f3c8ea",
+    "gamma/implementation-trace.csv": "b9e4734b7112c835e5019a56be3cc1a231422503b980b2b8d40a60ce7149e8fd",
+    "gamma/registry/artefacts.json": "23ec4dcbaa44ec0ab587feb1edbd0af273cfec8ff7ed9bcb73149cea5cf983c3",
+    "gamma/run_gamma.py": "0f70b08222fc9f9081b363828aab8a426eb21fd73b05e3384a7d9f48635c57de",
+    "gamma/tests/test_contracts.py": "a822f48d0b7c7e484b8d67f8b4d214120e024c8af5180f19fa9860044446fd10",
+    "gamma/tests/test_gamma.py": "e14e5c0414dcdf7f0be95940eeec7d905603c0540eeacbb40ae137b50f6f7aa6",
+    "gamma/validate_gamma.py": "7c7df9d82eb6dd2f67e83bd5cfb23d1deebf6008a4fbfe190f4a586a18c3e3f7"
+  },
+  "topology": {
+    "conceptual_layers": [
+      "DFL",
+      "CPL",
+      "CL",
+      "RIL",
+      "FRL",
+      "HIL"
+    ],
+    "context_layer_role": "shared substrate, not a serial stage",
+    "executable_stages": [
+      "Federate",
+      "Contextualise",
+      "Assess",
+      "Refine",
+      "Review"
+    ],
+    "external_systems": "outside CAPRA"
+  },
+  "worktree_note": "Generated while integrating around declared pre-existing user changes; no clean-tree claim."
+}

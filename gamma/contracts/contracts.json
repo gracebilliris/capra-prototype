@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "contract_version": "1.0.0",
+  "evidence_boundary": "Structural validation does not establish semantic correctness.",
+  "layers": {
+    "CL": {
+      "consumer": ["CPL", "RIL", "FRL", "HIL"],
+      "error_path": "refuse inactive or unapproved artefact; retain conflict",
+      "evidence_identifier": "context_version_id",
+      "input": "versioned context, mapping, criteria and artefact assertions",
+      "output": "selected immutable artefact versions",
+      "persistence": "gamma Context Layer substrate",
+      "producer": ["CPL", "FRL", "HIL"],
+      "required_fields": ["artefact_id", "artefact_type", "version", "owner", "status", "effective_from", "checksum"],
+      "optional_fields": ["effective_to", "supersedes", "rollback_relation"],
+      "validation": "version, status, effective interval, owner and checksum"
+    },
+    "CPL": {
+      "consumer": ["RIL", "HIL"],
+      "error_path": "review_required, expired, rejected or deferred",
+      "evidence_identifier": "context_version_id",
+      "input": "Federated Event plus approved Mapping Record",
+      "output": "Canonical Context Record",
+      "persistence": "Context Layer",
+      "producer": "DFL",
+      "required_fields": ["context_record_id", "context_version_id", "origin_event_id", "context_owner_id", "effective_from", "validation_status", "mapping_refs"],
+      "optional_fields": ["effective_to", "validation_actor", "validation_time", "conflict_assertions", "supersedes"],
+      "validation": "freshness, missingness, uncertainty, provenance and conflict"
+    },
+    "DFL": {
+      "consumer": "CPL",
+      "error_path": "quarantine with checksum and reason",
+      "evidence_identifier": "origin_event_id",
+      "input": "untrusted External System source event",
+      "output": "minimised Federated Event",
+      "persistence": "stage evidence",
+      "producer": "External Systems outside CAPRA",
+      "required_fields": ["source_record_id", "source_system", "source_version", "adapter_id", "adapter_version", "trusted_source", "domain", "observed_at", "business_purpose", "context_owner_id", "payload"],
+      "optional_fields": [],
+      "validation": "source contract, trust flag, types and telemetry allowlist"
+    },
+    "FRL": {
+      "consumer": "HIL",
+      "error_path": "proposal remains inactive",
+      "evidence_identifier": "revision_id",
+      "input": "Assessment Output",
+      "output": "versioned change proposal",
+      "persistence": "change history",
+      "producer": "RIL",
+      "required_fields": ["revision_id", "origin_event_id", "assessment_id", "risk_id", "requested_by", "rationale", "previous_version", "new_version", "rollback_target", "status_history"],
+      "optional_fields": ["reviewed_by", "approved_by", "approval_time", "effective_at", "rollback_reason"],
+      "validation": "rationale, evidence, roles, versions and rollback target"
+    },
+    "HIL": {
+      "consumer": ["CPL", "RIL", "FRL"],
+      "error_path": "reject or defer without silent continuation",
+      "evidence_identifier": "context_review_id or review_id",
+      "input": "Context Record or Assessment Output and proposal",
+      "output": "durable Confirm/Correct/Reject/Defer or Approve/Reject/Defer decision",
+      "persistence": "review evidence",
+      "producer": "authorised human role",
+      "required_fields": ["origin_event_id", "decision", "reviewer_id", "reviewer_role", "rationale", "timestamp"],
+      "optional_fields": ["field_corrections", "application_status", "output_version"],
+      "validation": "role, rationale, input/output versions and upstream IDs"
+    },
+    "RIL": {
+      "consumer": "FRL and HIL",
+      "error_path": "block when context is not confirmed, fresh and conflict-free",
+      "evidence_identifier": "assessment_id and risk_id",
+      "input": "human-confirmed Context Record and assessment manifest",
+      "output": "Assessment Output envelope",
+      "persistence": "assessment evidence",
+      "producer": "CPL using CL",
+      "required_fields": ["assessment_id", "risk_id", "origin_event_id", "context_version_ids", "mapping_version_ids", "criteria_set_version", "risk_model_version", "prompt_version", "model_identifier", "validation_status", "evidence"],
+      "optional_fields": ["criteria_observations", "confidence", "uncertainty"],
+      "validation": "lineage, context state and exact artefact versions"
+    }
+  },
+  "topology": {
+    "conceptual_layers": ["DFL", "CPL", "CL", "RIL", "FRL", "HIL"],
+    "executable_stages": ["Federate", "Contextualise", "Assess", "Refine", "Review"],
+    "external_systems": "outside CAPRA",
+    "forbidden_layer": "Compliance Layer",
+    "shared_substrate": "CL"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "adapter_id": "synthetic-admissions-csv-adapter",
+  "adapter_version": "1.0.0",
+  "business_purpose": "admission-assessment",
+  "context_owner_id": "admissions-office",
+  "domain": "admissions",
+  "observed_at": "2026-10-02T09:30:00Z",
+  "payload": {
+    "application_id": "synthetic-application-0001",
+    "candidate_obligations": [
+      "AU-Privacy-Act-candidate",
+      "EU-GDPR-candidate"
+    ],
+    "data_subject_location": "EU",
+    "decision": "deferred",
+    "email": "must-not-pass@example.invalid",
+    "free_text": "This disallowed text must not pass the minimisation gate.",
+    "gpa_band": "3.8+",
+    "processing_location": "AU-NSW",
+    "school_type": "Not a feeder, Public school",
+    "score_band": "1450-1550",
+    "source_confidence": "unknown",
+    "urm": "Yes"
+  },
+  "source_record_id": "admissiondata.csv#0",
+  "source_system": "synthetic-university-admissions-platform",
+  "source_version": "admissiondata/20261023",
+  "trusted_source": true
+}

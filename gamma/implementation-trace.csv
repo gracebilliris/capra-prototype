@@ -1,0 +1,47 @@
+decision_id,status,implementation_evidence,test_evidence,notes
+ARCH-01,implemented,gamma/contracts/contracts.json; README.md,test_contracts.ContractTests.test_exactly_six_layers_and_five_stages,Six layers; five stages over CL; External Systems outside
+ARCH-02,implemented,gamma/contracts/contracts.json; gamma/README.md,test_contracts.ContractTests.test_each_layer_contract_is_explicit_and_versioned,Executable responsibilities are contracts rather than layers
+ARCH-03,implemented,gamma/contracts/contracts.json,test_contracts.ContractTests.test_each_layer_contract_is_explicit_and_versioned,All six layer interfaces name validation errors persistence and evidence IDs
+ARCH-04,implemented,gamma/capra_gamma.py; gamma/contracts/contracts.json,test_gamma.GammaTestCase.test_invalid_source_is_quarantined; test_untrusted_source_is_quarantined,External inputs are untrusted boundary records
+CTX-01,implemented,gamma/capra_gamma.py; gamma/contracts/contracts.json,test_gamma.GammaTestCase.test_complete_context_can_be_confirmed,Canonical Context Record implemented
+CTX-02,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_source_to_review_trace_uses_no_timestamp_heuristics,Required provenance fields and origin_event_id persist
+CTX-03,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_unknown_confidence_does_not_default_to_perfect,Missing confidence remains unknown
+CTX-04,implemented,gamma/capra_gamma.py; gamma/docs/WORKED_SCENARIO.md,test_gamma.GammaTestCase.test_assessment_envelope_cites_versions_evidence_and_validation,Candidate obligations only; no compliance result
+CTX-05,implemented,gamma/registry/artefacts.json; gamma/capra_gamma.py,test_gamma.GammaTestCase.test_active_approved_mapping_is_selected; test_unapproved_mapping_cannot_be_selected,Only active approved mappings are selectable
+CTX-06,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_stale_context_is_blocked; test_conflicting_context_retains_assertions_and_is_blocked,Stale/conflicting context cannot silently proceed
+HUM-01,implemented,gamma/contracts/contracts.json; gamma/docs/WORKED_SCENARIO.md,test_gamma.GammaTestCase.test_complete_context_can_be_confirmed; test_post_review_is_durably_linked_upstream,Early and late HIL responsibilities retained
+HUM-02,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_missing_context_can_be_corrected_and_versioned; test_rejected_context_cannot_be_assessed; test_deferred_context_cannot_be_assessed,Confirm Correct Reject Defer are durable
+HUM-03,already-addressed,README.md; test_artefacts/17_Layer_Report_HIL.md,,Six historical Beta form submissions remain historical interaction evidence only
+HUM-04,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_post_review_is_durably_linked_upstream; test_apply_and_rollback_retain_history,Review is durable and approval is separate from application
+GOV-01,implemented,gamma/registry/artefacts.json,test_contracts.ContractTests.test_registry_artefacts_have_governance_fields,Common versioned artefact fields
+GOV-02,implemented,gamma/registry/artefacts.json; gamma/evidence/gamma-admissions-2026-10-02/release-manifest.json,test_gamma.GammaTestCase.test_assessment_envelope_cites_versions_evidence_and_validation,Manifest names exact artefact and deterministic model identifiers without secrets
+GOV-03,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_proposer_cannot_approve_own_change; test_unapproved_change_cannot_be_applied; test_apply_and_rollback_retain_history,Segregation status history and rollback
+GOV-04,implemented,gamma/capra_gamma.py; gamma/evidence/gamma-admissions-2026-10-02/assessment-output.json,test_gamma.GammaTestCase.test_assessment_envelope_cites_versions_evidence_and_validation,Assessment Output envelope retains evidence and validation state
+REG-01,documented,gamma/README.md; gamma/docs/WORKED_SCENARIO.md,test_gamma.GammaTestCase.test_assessment_envelope_cites_versions_evidence_and_validation,Uses candidate obligation and review_required wording
+REG-02,rejected,gamma/contracts/contracts.json; gamma/README.md,test_contracts.ContractTests.test_exactly_six_layers_and_five_stages,No seventh compliance governance or jurisdiction layer
+TEL-01,implemented,gamma/contracts/contracts.json; gamma/docs/TELEMETRY_THREAT_MODEL.md,test_gamma.GammaTestCase.test_valid_source_is_minimised_and_lineage_is_stable; test_detailed_telemetry_requires_role_and_public_view_has_no_payload,Bounded telemetry governance is executable and documented
+TEL-02,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_valid_source_is_minimised_and_lineage_is_stable,Allowlist removes prohibited test fields and logs actions
+TEL-03,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_unauthorised_role_cannot_apply_change; test_detailed_telemetry_requires_role_and_public_view_has_no_payload,Demonstration roles only; not enterprise IAM
+TEL-04,implemented,gamma/capra_gamma.py,test_gamma.GammaTestCase.test_retention_expiry_writes_receipt_and_preserves_legal_hold,Configurable expiry mechanics legal hold and receipts
+TEL-05,documented,gamma/docs/TELEMETRY_THREAT_MODEL.md,,Threat model is not privacy-effectiveness evidence
+TERM-01,documented,gamma/README.md; README.md,test_contracts.ContractTests.test_exactly_six_layers_and_five_stages,Current Gamma terminology is canonical; older terms remain historical
+TERM-02,implemented,gamma/capra_gamma.py; gamma/run_gamma.py; gamma/evidence/gamma-admissions-2026-10-02/release-manifest.json,test_gamma.GammaTestCase.test_assessment_envelope_cites_versions_evidence_and_validation,Human-facing iteration and release labels use Gamma and capra-gamma-2026-10-02; internal technical artefact versions remain versioned
+TRACE-01,implemented,gamma/capra_gamma.py; gamma/evidence/gamma-admissions-2026-10-02/lineage-trace.json,test_gamma.GammaTestCase.test_source_to_review_trace_uses_no_timestamp_heuristics,Complete controlled chain uses identifiers only
+TRACE-02,implemented,gamma/docs/WORKED_SCENARIO.md; gamma/fixtures/admissions_event.json; reviewer/fixtures/admissiondata.csv,test_gamma.GammaTestCase.test_source_to_review_trace_uses_no_timestamp_heuristics,Admissions fixture restored and cross-jurisdiction branch is candidate-only
+TRACE-03,implemented,gamma/docs/WORKED_SCENARIO.md,,Scenario-to-architecture matrix names unsupported properties
+EVID-01,already-addressed,README.md; test_artefacts/13_Layer_Report_DFL.md; test_artefacts/14_Layer_Report_CPL.md; test_artefacts/15_Layer_Report_RIL.md; test_artefacts/16_Layer_Report_ERL.md; test_artefacts/17_Layer_Report_HIL.md,,Historical Alpha/Beta cross-domain evidence retained
+EVID-02,already-addressed,README.md; test_artefacts/18_AllLayers_Combined_Report.md; test_artefacts/19_DSRM_Evaluation_Report.md,,Historical Beta metrics are not Gamma results
+EVID-03,already-addressed,test_artefacts/14_Layer_Report_CPL.md; gamma/capra_gamma.py,test_gamma.GammaTestCase.test_source_to_review_trace_uses_no_timestamp_heuristics,Existing provenance acknowledged and extended
+EVID-04,already-addressed,test_artefacts/16_Layer_Report_ERL.md; gamma/capra_gamma.py,test_gamma.GammaTestCase.test_apply_and_rollback_retain_history,Existing proposal capability extended rather than replaced
+EVID-05,already-addressed,README.md; gamma/README.md; evidence/prospective_cohort_2026-08-31/,,20-case package is trigger/instrumentation continuity evidence only
+TEST-01,documented,gamma/tests/; gamma/README.md,gamma/run_tests.sh,Self-contained Gamma regression passed; live historical n8n/service rerun is not represented as Gamma evidence
+TEST-02,implemented,gamma/tests/test_gamma.py; gamma/tests/test_contracts.py,gamma/run_tests.sh,Positive and negative controls cover the bounded executable profile
+DEFER-01,deferred,gamma/README.md,,Semantic correctness requires an independently adjudicated benchmark
+DEFER-02,deferred,gamma/README.md; gamma/docs/TELEMETRY_THREAT_MODEL.md,,Privacy effectiveness requires a comparative property-specific study
+DEFER-03,deferred,gamma/README.md; gamma/docs/WORKED_SCENARIO.md,,Legal validity and compliance require jurisdiction-specific expert review
+DEFER-04,deferred,gamma/README.md,,Production readiness requires separate security scale resilience and operations validation
+DEFER-05,deferred,gamma/README.md,,Independent second-reviewer survey coding remains future work
+REJ-01,rejected,gamma/README.md; README.md,,Survey agreement is not implementation or effectiveness evidence
+REJ-02,rejected,gamma/README.md; README.md,,No-op stress status is not full end-to-end success
+REL-01,implemented,reviewer/fixtures/admissiondata.csv; reviewer/fixtures/environmental_air_quality.csv; reviewer/scripts/seed_telemetry.py; reviewer/fixtures/README.md,gamma/tests/test_gamma.py,Admissions identity restored without destroying air-quality observations
+REL-02,implemented,gamma/evidence/gamma-admissions-2026-10-02/release-manifest.json; gamma/evidence/gamma-admissions-2026-10-02/SHA256SUMS,gamma/run_tests.sh,Manifest records base commit and honestly records integration into a dirty worktree; no tag or clean-tree claim

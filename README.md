@@ -9,6 +9,8 @@ CAPRA processes multi-agent telemetry through six layers — **DFL** (Data Feder
 
 The repository includes:
 
+- a self-contained, deterministic Gamma reference implementation and evidence
+  package that requires only Python's standard library;
 - a no-build Docker route for first-time users;
 - deterministic synthetic fixtures for university admissions, healthcare, and
   retail;
@@ -31,6 +33,42 @@ route provisions the same dashboard locally.*
 > **Research prototype.** CAPRA is not production hardened. Its generated risk
 > inferences are research outputs for inspection, not validated privacy
 > assessments or automated compliance decisions.
+
+## CAPRA Gamma: completed bounded research iteration
+
+The authoritative Gamma research route is self-contained and deterministic:
+
+```bash
+/usr/bin/python3 gamma/run_gamma.py
+gamma/run_tests.sh
+```
+
+It implements the five stages—Federate, Contextualise, Assess, Refine and
+Review—over the shared Context Layer substrate while preserving the six
+conceptual layers DFL, CPL, CL, RIL, FRL and HIL. External Systems remain
+outside CAPRA. A seventh compliance layer is explicitly rejected.
+
+Gamma retains a complete synthetic admissions chain from source event to
+durable review and rollback, versioned contracts and artefacts, context
+validation, mapping governance, telemetry minimisation, access/retention
+mechanics, and SHA-256 evidence. See [`gamma/README.md`](gamma/README.md),
+[`gamma/docs/WORKED_SCENARIO.md`](gamma/docs/WORKED_SCENARIO.md), and
+[`gamma/implementation-trace.csv`](gamma/implementation-trace.csv).
+
+Gamma was refined using a completed expert survey (n=41). All 15 criterion
+items met the predefined consensus rule, with agreement from 82.9% to 97.6%.
+The feedback informed clearer terminology, interfaces, context/provenance/
+uncertainty controls, human review, change governance, telemetry controls, and
+evidence visibility. Survey agreement is design feedback; it is not framework
+validation or evidence of operational effectiveness.
+
+Gamma is complete only as this bounded reference implementation. It does not
+claim production readiness, legal compliance or applicability, privacy
+effectiveness, semantic correctness, calibrated confidence, or operational
+reliability. The Docker/n8n route and reports below are retained Beta-era
+implementation and historical evidence, not the authoritative Gamma run.
+Gamma is published here as a bounded research artefact, not as a deployed
+service or a production-ready software release.
 
 ---
 
@@ -327,7 +365,7 @@ More historical diagnostics are recorded in
 |---|---|---|
 | Alpha | Demonstrated end-to-end across three illustrative scenarios | `test_artefacts/13`–`17_Layer_Report_*.md` |
 | Beta  | All prototype layers ≥ 95% per-layer reliability (combined 98.53%); substantive risk output surfaced in Risk Dashboard (30% CRIT / 49% HIGH / 15% MED / 6% LOW over the reference window) | `test_artefacts/18_AllLayers_Combined_Report.md`, `test_artefacts/07_Test_Run_Findings.md §20` |
-| Gamma (in progress) | Pending; will incorporate industry field survey results | — |
+| Gamma | Completed bounded, survey-informed research iteration: deterministic admissions walkthrough, governed artefacts/context, early and post-assessment review, telemetry controls, 25 controlled tests, and checksum-verifiable evidence. No production, legal-compliance, privacy-effectiveness, semantic-correctness, or operational-reliability claim. | `gamma/README.md`, `gamma/evidence/gamma-admissions-2026-10-02/` |
 
 **Latest tagged release:** [`v1.0-icse-demo`](https://github.com/gracebilliris/capra-prototype/releases/tag/v1.0-icse-demo) (commit `022d22d`) — pinned prototype snapshot referenced by the CAPRA publications programme.
 

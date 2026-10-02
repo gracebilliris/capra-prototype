@@ -1,0 +1,260 @@
+[
+  {
+    "adapter_id": "synthetic-admissions-csv-adapter",
+    "adapter_version": "1.0.0",
+    "business_purpose": "admission-assessment",
+    "context_owner_id": "admissions-office",
+    "domain": "admissions",
+    "event_id": "event-8e4a1af7-6c92-5967-9c35-fb705f200620",
+    "expires_at": "2026-10-09T10:00:00Z",
+    "ingested_at": "2026-10-02T10:00:00Z",
+    "legal_hold": false,
+    "observed_at": "2026-10-02T09:30:00Z",
+    "origin_event_id": "origin-0bf8aeae-6e39-582c-a7a1-98879347852e",
+    "payload": {
+      "application_id": "synthetic-application-0001",
+      "candidate_obligations": [
+        "AU-Privacy-Act-candidate",
+        "EU-GDPR-candidate"
+      ],
+      "data_subject_location": "EU",
+      "decision": "deferred",
+      "gpa_band": "3.8+",
+      "processing_location": "AU-NSW",
+      "school_type": "Not a feeder, Public school",
+      "score_band": "1450-1550",
+      "source_confidence": "unknown",
+      "urm": "Yes"
+    },
+    "provenance_method": "deterministic-adapter",
+    "redaction_count": 2,
+    "retention_class": "raw_telemetry",
+    "source_event_id": "admissiondata.csv#0",
+    "source_record_id": "admissiondata.csv#0",
+    "source_system": "synthetic-university-admissions-platform",
+    "source_version": "admissiondata/20261023",
+    "stage": "federate",
+    "stage_contract": "capra.gamma.federate.v1",
+    "telemetry_policy_version": "telemetry-minimisation/1.0.0"
+  },
+  {
+    "applicability_basis": "fixture assertion; reviewer confirmation required",
+    "applicability_status": "candidate",
+    "business_purpose": "admission-assessment",
+    "candidate_obligations": [
+      "AU-Privacy-Act-candidate",
+      "EU-GDPR-candidate"
+    ],
+    "conflict": false,
+    "conflict_assertions": [],
+    "context_owner_id": "admissions-office",
+    "context_record_id": "context-969842ad-66c2-583f-9b52-9614df75dd24",
+    "context_schema_version": "context-record/1.0.0",
+    "context_version_id": "context-version-667c24b9-fa9c-57b7-a03e-389eef825fb3",
+    "data_subject_location": "EU",
+    "domain": "admissions",
+    "effective_from": "2026-10-02T09:30:00Z",
+    "effective_to": "2026-12-31T23:59:59Z",
+    "expires_at": "2027-01-02T10:00:00Z",
+    "ingested_at": "2026-10-02T10:00:00Z",
+    "jurisdiction": [
+      "AU-NSW",
+      "EU"
+    ],
+    "legal_hold": false,
+    "mapping_refs": [
+      {
+        "mapping_id": "mapping-admissions-purpose",
+        "version": "1.0.0"
+      }
+    ],
+    "missing_context_fields": [],
+    "observed_at": "2026-10-02T09:30:00Z",
+    "origin_event_id": "origin-0bf8aeae-6e39-582c-a7a1-98879347852e",
+    "processing_location": "AU-NSW",
+    "prov_was_derived_from": "event-8e4a1af7-6c92-5967-9c35-fb705f200620",
+    "provenance_method": "deterministic-adapter",
+    "purpose_owner": "admissions-office",
+    "retention_class": "enriched_context",
+    "source_confidence": "unknown",
+    "source_event_id": "admissiondata.csv#0",
+    "source_version": "admissiondata/20261023",
+    "stage": "contextualise",
+    "stage_contract": "capra.gamma.contextualise.v1",
+    "supersedes": null,
+    "transformation_confidence": "deterministic",
+    "uncertainty_note": "Controlled metadata state; not a calibrated probability.",
+    "uncertainty_type": "unvalidated",
+    "validation_actor": null,
+    "validation_status": "inferred",
+    "validation_time": null,
+    "version": "1.0.0"
+  },
+  {
+    "context_review_id": "context-review-667c24b9-fa9c-57b7-a03e-389eef825fb3",
+    "decision": "Confirm",
+    "field_corrections": {},
+    "input_context_version_id": "context-version-667c24b9-fa9c-57b7-a03e-389eef825fb3",
+    "origin_event_id": "origin-0bf8aeae-6e39-582c-a7a1-98879347852e",
+    "output_context_version_id": "context-version-667c24b9-fa9c-57b7-a03e-389eef825fb3",
+    "rationale": "Synthetic fixture fields are complete for this controlled walkthrough.",
+    "reviewed_at": "2026-10-02T10:00:00Z",
+    "reviewer_id": "curator-gamma-01",
+    "reviewer_role": "context_curator",
+    "stage": "context-validation",
+    "stage_contract": "capra.gamma.context-validation.v1"
+  },
+  {
+    "assessment_id": "assessment-26efadf1-ecca-591a-9105-92db1532f029",
+    "assessment_manifest": {
+      "artefacts": [
+        {
+          "artefact_id": "bounded-explanation",
+          "artefact_type": "prompt",
+          "checksum": "sha256:3b9384cff90bbf04b10db81da1be719132c765862c539bfe26cc98b85792395c",
+          "version": "1.0.0"
+        },
+        {
+          "artefact_id": "capra-context-ontology",
+          "artefact_type": "ontology",
+          "checksum": "sha256:5094ae5a8b427deb072fb77e371a17bfd189a13aad2d2362dd9586f4650bfecf",
+          "version": "1.0.0"
+        },
+        {
+          "artefact_id": "context-record-schema",
+          "artefact_type": "schema",
+          "checksum": "sha256:4c9c857fbd2b15c307b2650a04b87d59cdd471c259456e7f8668aa59770b90b2",
+          "version": "1.0.0"
+        },
+        {
+          "artefact_id": "criteria-admissions",
+          "artefact_type": "criteria_set",
+          "checksum": "sha256:3ef090d9122ec47678c2feefee055162bed0ae83cf6e4d116efb47f549730bc5",
+          "version": "1.0.0"
+        },
+        {
+          "artefact_id": "mapping-admissions-purpose",
+          "artefact_type": "mapping",
+          "checksum": "sha256:c650cfe3dc3283f7bb19b3bbec36b69110a67e16a36b21050fbe0f017986582",
+          "version": "1.0.0"
+        },
+        {
+          "artefact_id": "risk-rules",
+          "artefact_type": "risk_model",
+          "checksum": "sha256:f45c62d41de1c00e37abdbcb839f8dc4df9498c9516a928f171ce275f6439343",
+          "version": "1.0.0"
+        },
+        {
+          "artefact_id": "telemetry-minimisation",
+          "artefact_type": "telemetry_policy",
+          "checksum": "sha256:61ca28175fae135a5b760dc38d8a9cdd5da1465d38e331068339b17253f068df",
+          "version": "1.0.0"
+        }
+      ],
+      "contains_secrets": false,
+      "gamma_label": "Gamma",
+      "manifest_id": "assessment-manifest-0cbccd78-75f0-5eb2-a6bf-579f32a52929",
+      "model": {
+        "identifier": "ruleset-admissions-v1",
+        "provider": "capra-deterministic-reference",
+        "reproducibility": "deterministic standard-library rules"
+      }
+    },
+    "confidence": "unknown",
+    "context_version_ids": [
+      "context-version-667c24b9-fa9c-57b7-a03e-389eef825fb3"
+    ],
+    "criteria_observations": [
+      {
+        "candidate_obligation": "AU-Privacy-Act-candidate",
+        "source": "synthetic fixture assertion",
+        "status": "review_required"
+      },
+      {
+        "candidate_obligation": "EU-GDPR-candidate",
+        "source": "synthetic fixture assertion",
+        "status": "review_required"
+      }
+    ],
+    "criteria_set_version": "criteria-admissions/1.0.0",
+    "domain": "admissions",
+    "evidence": {
+      "context_version_id": "context-version-667c24b9-fa9c-57b7-a03e-389eef825fb3",
+      "manifest_id": "assessment-manifest-0cbccd78-75f0-5eb2-a6bf-579f32a52929",
+      "source_event_id": "admissiondata.csv#0"
+    },
+    "expires_at": "2027-10-02T10:00:00Z",
+    "explanation": "The controlled fixture combines a protected-attribute flag with an admissions purpose. This is a criteria observation for human review, not a legal conclusion.",
+    "generated_at": "2026-10-02T10:00:00Z",
+    "legal_hold": false,
+    "mapping_version_ids": [
+      "mapping-admissions-purpose@1.0.0"
+    ],
+    "model_identifier": "ruleset-admissions-v1",
+    "origin_event_id": "origin-0bf8aeae-6e39-582c-a7a1-98879347852e",
+    "prompt_version": "bounded-explanation/1.0.0",
+    "retention_class": "assessment",
+    "review_status": "pending",
+    "risk_id": "risk-f3b14dc1-be98-5138-896b-947268dc7962",
+    "risk_level": "review_required",
+    "risk_model_version": "risk-rules/1.0.0",
+    "stage": "assess",
+    "stage_contract": "capra.gamma.assess.v1",
+    "uncertainty": "Controlled metadata state; not a calibrated probability.",
+    "validation_status": "human_confirmed"
+  },
+  {
+    "application_status": "not_applied",
+    "approval_time": null,
+    "approved_by": null,
+    "assessment_id": "assessment-26efadf1-ecca-591a-9105-92db1532f029",
+    "effective_at": null,
+    "evidence_refs": [
+      "assessment-manifest-0cbccd78-75f0-5eb2-a6bf-579f32a52929",
+      "risk-f3b14dc1-be98-5138-896b-947268dc7962"
+    ],
+    "impacted_contracts": [
+      "capra.gamma.contextualise.v1"
+    ],
+    "new_version": "mapping-admissions-purpose/1.1.0",
+    "origin_event_id": "origin-0bf8aeae-6e39-582c-a7a1-98879347852e",
+    "previous_version": "mapping-admissions-purpose/1.0.0",
+    "rationale": "Clarify the mapping rationale exposed to the reviewer.",
+    "requested_by": "analyst-gamma-01",
+    "reviewed_by": null,
+    "revision_id": "revision-81fec751-c7b5-5a17-a52f-356e8abd8956",
+    "risk_id": "risk-f3b14dc1-be98-5138-896b-947268dc7962",
+    "rollback_reason": null,
+    "rollback_target": "mapping-admissions-purpose/1.0.0",
+    "stage": "refine",
+    "stage_contract": "capra.gamma.refine.v1",
+    "status": "proposed",
+    "status_history": [
+      {
+        "actor": "analyst-gamma-01",
+        "at": "2026-10-02T10:00:00Z",
+        "status": "proposed"
+      }
+    ]
+  },
+  {
+    "application_status": "rolled_back",
+    "assessment_id": "assessment-26efadf1-ecca-591a-9105-92db1532f029",
+    "decision": "Approve",
+    "expires_at": "2028-10-02T10:00:00Z",
+    "input_version": "mapping-admissions-purpose/1.0.0",
+    "legal_hold": false,
+    "origin_event_id": "origin-0bf8aeae-6e39-582c-a7a1-98879347852e",
+    "output_version": "mapping-admissions-purpose/1.1.0",
+    "rationale": "Approve governance-mechanics demonstration; no effectiveness claim is made.",
+    "retention_class": "review",
+    "review_id": "review-c45ab721-4b1c-593b-8863-fb094775f157",
+    "reviewer_id": "reviewer-gamma-01",
+    "reviewer_role": "reviewer",
+    "revision_id": "revision-81fec751-c7b5-5a17-a52f-356e8abd8956",
+    "risk_id": "risk-f3b14dc1-be98-5138-896b-947268dc7962",
+    "stage": "review",
+    "stage_contract": "capra.gamma.review.v1",
+    "timestamp": "2026-10-02T10:00:00Z"
+  }
+]

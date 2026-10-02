@@ -1,0 +1,14 @@
+[
+  {
+    "action": "removed",
+    "field": "email",
+    "policy_version": "telemetry-minimisation/1.0.0",
+    "source_record_id": "admissiondata.csv#0"
+  },
+  {
+    "action": "removed",
+    "field": "free_text",
+    "policy_version": "telemetry-minimisation/1.0.0",
+    "source_record_id": "admissiondata.csv#0"
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "claim_boundary": "Passing tests support only the controlled mechanics they exercise.",
+  "command": "/usr/bin/python3 gamma/validate_gamma.py",
+  "errors": 0,
+  "evaluated_at": "2026-10-02T10:00:00Z",
+  "failures": 0,
+  "skipped": 0,
+  "status": "passed",
+  "tests_run": 25,
+  "validation_id": "gamma-validation-2026-10-02"
+}

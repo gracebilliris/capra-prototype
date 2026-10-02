@@ -1,0 +1,20 @@
+{
+  "application_status": "rolled_back",
+  "assessment_id": "assessment-26efadf1-ecca-591a-9105-92db1532f029",
+  "decision": "Approve",
+  "expires_at": "2028-10-02T10:00:00Z",
+  "input_version": "mapping-admissions-purpose/1.0.0",
+  "legal_hold": false,
+  "origin_event_id": "origin-0bf8aeae-6e39-582c-a7a1-98879347852e",
+  "output_version": "mapping-admissions-purpose/1.1.0",
+  "rationale": "Approve governance-mechanics demonstration; no effectiveness claim is made.",
+  "retention_class": "review",
+  "review_id": "review-c45ab721-4b1c-593b-8863-fb094775f157",
+  "reviewer_id": "reviewer-gamma-01",
+  "reviewer_role": "reviewer",
+  "revision_id": "revision-81fec751-c7b5-5a17-a52f-356e8abd8956",
+  "risk_id": "risk-f3b14dc1-be98-5138-896b-947268dc7962",
+  "stage": "review",
+  "stage_contract": "capra.gamma.review.v1",
+  "timestamp": "2026-10-02T10:00:00Z"
+}

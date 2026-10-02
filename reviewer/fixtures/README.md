@@ -39,6 +39,13 @@ vocabulary or a seeded pseudo-random generator. No real person, patient,
 applicant, or employee is represented, and no value is derived from the
 original files.
 
+The directory also preserves `environmental_air_quality.csv`, the NSW
+station-observation fixture used for an ad hoc non-PII stress test during Beta
+development. It is deliberately separate from `admissiondata.csv` and is not
+selected by the documented admissions command. This preserves the supplied
+environmental observations while restoring the admissions scenario name and
+schema to agreement.
+
 Each file ships with **12 rows**, not the original row counts. The ingestion
 stage aggregates a whole file into a single language-model prompt, and the
 reviewer route runs that model locally, so a 1,446-row file would take a small
